@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                  String             @id @default(cuid())
+  clerkId             String             @unique
+  email               String             @unique
+  username            String?            @unique
+  role                UserRole           @default(USER)
+  accountStatus       AccountStatus      @default(PENDING)
+  verificationStatus  VerificationStatus @default(UNVERIFIED)
+  emailVerified       Boolean            @default(false)
+  onboardingCompleted Boolean            @default(false)
+  lastActiveAt        DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  deletedAt           DateTime?
+  media               UserMedia[]
+  profile             UserProfile?
+
+  @@index([email])
+  @@index([username])
+  @@index([accountStatus])
+}
+
+model UserProfile {
+  id                String            @id @default(cuid())
+  userId            String            @unique
+  displayName       String?
+  firstName         String
+  lastName          String?
+  dateOfBirth       DateTime
+  gender            Gender
+  bio               String?           @db.VarChar(500)
+  occupation        String?
+  company           String?
+  height            Int?
+  profileVisibility ProfileVisibility @default(PUBLIC)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  deletedAt         DateTime?
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([gender])
+}
+
+model UserMedia {
+  id             String    @id @default(cuid())
+  userId         String
+  url            String
+  publicId       String
+  mediaType      MediaType @default(IMAGE)
+  isProfilePhoto Boolean   @default(false)
+  isVerified     Boolean   @default(false)
+  displayOrder   Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, displayOrder])
+  @@index([mediaType])
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  NON_BINARY
+}
+
+enum AccountStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum ProfileVisibility {
+  PUBLIC
+  PRIVATE
+  PREMIUM_ONLY
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
