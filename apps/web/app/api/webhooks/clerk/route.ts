@@ -38,10 +38,10 @@ export async function POST(req: Request) {
 
   try {
     event = webhook.verify(payload, {
-      "svix-id": svixId,
-      "svix-timestamp": svixTimestamp,
-      "svix-signature": svixSignature,
-    }) as WebhookEvent;
+  "svix-id": svixId,
+  "svix-timestamp": svixTimestamp,
+  "svix-signature": svixSignature,
+}) as unknown as WebhookEvent;
   } catch (error) {
     console.error("❌ Clerk webhook verification failed:", error);
 
