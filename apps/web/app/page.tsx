@@ -1,6 +1,31 @@
+import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
-export default function Home() {
+import { canAccessApp } from "@/lib/auth/user-access";
+import { getCurrentUserWithProfile } from "@/lib/auth/get-current-user-with-profile";
+
+export default async function Home() {
+  const { userId } = await auth();
+
+  if (userId) {
+    const user = await getCurrentUserWithProfile();
+
+    if (!user) {
+      redirect("/sign-in");
+    }
+
+    if (!canAccessApp(user)) {
+      redirect("/account-disabled");
+    }
+
+    if (!user.onboardingCompleted || !user.profile) {
+      redirect("/onboarding");
+    }
+
+    redirect("/dashboard");
+  }
+
   return (
     <main className="min-h-screen bg-[#0b0812] text-white">
       {/* Navigation */}
@@ -34,8 +59,8 @@ export default function Home() {
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute left-1/2 top-[-180px] h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-purple-600/20 blur-[120px]" />
+      <section className="relativeoverflow-hidden">
+        <div className="absolute left-1/2 top-[-180px] h-[500px] w-[500px] -translate-x-1/2 rounded-fullbg-purple-600/20 blur-[120px]" />
 
         <div className="relative mx-auto flex min-h-[calc(100vh-80px)] w-full max-w-7xl items-center px-6 py-24 lg:px-8">
           <div className="max-w-4xl">
@@ -45,7 +70,7 @@ export default function Home() {
 
             <h1 className="max-w-4xl text-5xl font-semibold leading-[1.05] tracking-[-0.05em] sm:text-6xl lg:text-8xl">
               Find a connection
-              <span className="block bg-gradient-to-r from-purple-300 via-fuchsia-300 to-white bg-clip-text text-transparent">
+              <span className="block bg-gradient-to-r from-purple-300via-fuchsia-300 to-white bg-clip-text text-transparent">
                 that feels different.
               </span>
             </h1>
@@ -100,9 +125,9 @@ export default function Home() {
 
           <div className="max-w-xl">
             <p className="text-lg leading-8 text-white/60">
-              Modern dating can feel overwhelming. Lumora is designed to make
-              the experience feel more intentional — giving people space to
-              discover each other beyond endless swiping.
+              Modern dating can feel overwhelming. Lumora is designedto make the
+              experience feel more intentional — giving people space to discover
+              each other beyond endless swiping.
             </p>
           </div>
         </div>
@@ -127,13 +152,13 @@ export default function Home() {
             <FeatureCard
               number="01"
               title="Discover"
-              description="Explore people who align with your interests, personality, and relationship goals."
+              description="Explorepeople who align with your interests, personality, and relationship goals."
             />
 
             <FeatureCard
               number="02"
               title="Connect"
-              description="Move beyond surface-level interactions and start conversations with real potential."
+              description="Move beyond surface-level interactions andstart conversations with real potential."
             />
 
             <FeatureCard
@@ -148,7 +173,7 @@ export default function Home() {
       {/* Premium */}
       <section id="premium" className="border-t border-white/10">
         <div className="mx-auto w-full max-w-7xl px-6 py-24 lg:px-8 lg:py-32">
-          <div className="relative overflow-hidden rounded-[2rem] border border-purple-300/20 bg-gradient-to-br from-purple-950/70 via-[#171020] to-[#0d0914] p-8 sm:p-12 lg:p-16">
+          <div className="relativeoverflow-hidden rounded-[2rem] border border-purple-300/20 bg-gradient-to-br from-purple-950/70 via-[#171020] to-[#0d0914] p-8 sm:p-12 lg:p-16">
             <div className="absolute -right-32 -top-32 h-80 w-80 rounded-full bg-purple-500/20 blur-[100px]" />
 
             <div className="relative max-w-2xl">
@@ -157,7 +182,7 @@ export default function Home() {
               </p>
 
               <h2 className="mt-5 text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">
-                Dating should feel exceptional.
+                Dating should feelexceptional.
               </h2>
 
               <p className="mt-6 text-lg leading-8 text-white/60">
@@ -199,14 +224,14 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="group rounded-3xl border border-white/10 bg-white/[0.03] p-7 transition duration-300 hover:-translate-y-1 hover:border-purple-300/20 hover:bg-white/[0.05]">
+    <div className="group rounded-3xl border border-white/10 bg-white/[0.03] p-7 transition duration-300hover:-translate-y-1 hover:border-purple-300/20 hover:bg-white/[0.05]">
       <span className="text-sm text-white/30">{number}</span>
 
       <h3 className="mt-12 text-2xl font-semibold tracking-[-0.03em]">
         {title}
       </h3>
 
-      <p className="mt-4 leading-7 text-white/50">{description}</p>
+      <p className="mt-4 leading-7text-white/50">{description}</p>
     </div>
   );
 }
