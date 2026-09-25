@@ -2,10 +2,11 @@
 
 import { useState, type FormEvent } from "react";
 
-import { onboardingSchema } from "@/lib/validations/onboarding";
+import { completeOnboarding } from "@/actions/onboarding";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { onboardingSchema } from "@/lib/validations/onboarding";
 
 type FormValues = {
   firstName: string;
@@ -24,7 +25,8 @@ const initialValues: FormValues = {
 export function OnboardingForm() {
   const [values, setValues] = useState<FormValues>(initialValues);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitted, setSubmitted] = useState(false);
+  const [serverError, setServerError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function handleChange(field: keyof FormValues, value: string) {
     setValues((current) => ({
@@ -37,18 +39,20 @@ export function OnboardingForm() {
       [field]: "",
     }));
 
-    setSubmitted(false);
+    setServerError("");
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const result = onboardingSchema.safeParse(values);
+    setServerError("");
 
-    if (!result.success) {
+    const clientValidation = onboardingSchema.safeParse(values);
+
+    if (!clientValidation.success) {
       const nextErrors: Record<string, string> = {};
 
-      for (const issue of result.error.issues) {
+      for (const issue of clientValidation.error.issues) {
         const field = issue.path[0];
 
         if (typeof field === "string" && !nextErrors[field]) {
@@ -57,12 +61,45 @@ export function OnboardingForm() {
       }
 
       setErrors(nextErrors);
-      setSubmitted(false);
       return;
     }
 
     setErrors({});
-    setSubmitted(true);
+    setIsSubmitting(true);
+
+    try {
+      const result = await completeOnboarding(values);
+
+      if (!result.success) {
+        if (result.fieldErrors) {
+          const nextErrors: Record<string, string> = {};
+
+          for (const [field, messages] of Object.entries(result.fieldErrors)) {
+            const message = messages?.[0];
+
+            if (message) {
+              nextErrors[field] = message;
+            }
+          }
+
+          setErrors(nextErrors);
+        }
+
+        setServerError(
+          result.error || "We couldn't save your profile. Please try again.",
+        );
+
+        return;
+      }
+
+      window.location.href = "/dashboard";
+    } catch (error) {
+      console.error("Failed to complete onboarding:", error);
+
+      setServerError("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -77,6 +114,7 @@ export function OnboardingForm() {
           value={values.firstName}
           onChange={(event) => handleChange("firstName", event.target.value)}
           aria-invalid={Boolean(errors.firstName)}
+          disabled={isSubmitting}
         />
 
         {errors.firstName ? (
@@ -94,6 +132,7 @@ export function OnboardingForm() {
           value={values.lastName}
           onChange={(event) => handleChange("lastName", event.target.value)}
           aria-invalid={Boolean(errors.lastName)}
+          disabled={isSubmitting}
         />
 
         {errors.lastName ? (
@@ -112,6 +151,7 @@ export function OnboardingForm() {
           value={values.dateOfBirth}
           onChange={(event) => handleChange("dateOfBirth", event.target.value)}
           aria-invalid={Boolean(errors.dateOfBirth)}
+          disabled={isSubmitting}
         />
 
         {errors.dateOfBirth ? (
@@ -128,7 +168,8 @@ export function OnboardingForm() {
           value={values.gender}
           onChange={(event) => handleChange("gender", event.target.value)}
           aria-invalid={Boolean(errors.gender)}
-          className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-9 w-full rounded-lg border px-3 py-1 text-sm outline-none focus-visible:ring-3"
+          disabled={isSubmitting}
+          className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-9 w-full rounded-lg border px-3 py-1 text-sm outline-none focus-visible:ring-3 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <option value="">Select your gender</option>
           <option value="MALE">Male</option>
@@ -141,16 +182,18 @@ export function OnboardingForm() {
         ) : null}
       </div>
 
-      <Button type="submit" className="w-full">
-        Continue
-      </Button>
-
-      {submitted ? (
-        <p className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm text-primary">
-          Your information passed validation. Database saving will be added in
-          the next step.
-        </p>
+      {serverError ? (
+        <div
+          role="alert"
+          className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
+        >
+          {serverError}
+        </div>
       ) : null}
+
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
+        {isSubmitting ? "Saving profile..." : "Continue"}
+      </Button>
     </form>
   );
 }
