@@ -38,10 +38,10 @@ export async function POST(req: Request) {
 
   try {
     event = webhook.verify(payload, {
-  "svix-id": svixId,
-  "svix-timestamp": svixTimestamp,
-  "svix-signature": svixSignature,
-}) as unknown as WebhookEvent;
+      "svix-id": svixId,
+      "svix-timestamp": svixTimestamp,
+      "svix-signature": svixSignature,
+    }) as unknown as WebhookEvent;
   } catch (error) {
     console.error("❌ Clerk webhook verification failed:", error);
 
@@ -59,9 +59,8 @@ export async function POST(req: Request) {
 
         const primaryEmail =
           email_addresses.find(
-            (email) => email.id === event.data.primary_email_address_id
-          )?.email_address ??
-          email_addresses[0]?.email_address;
+            (email) => email.id === event.data.primary_email_address_id,
+          )?.email_address ?? email_addresses[0]?.email_address;
 
         if (!primaryEmail) {
           console.error("❌ Clerk user has no email address:", id);
@@ -87,9 +86,8 @@ export async function POST(req: Request) {
 
         const primaryEmail =
           email_addresses.find(
-            (email) => email.id === event.data.primary_email_address_id
-          )?.email_address ??
-          email_addresses[0]?.email_address;
+            (email) => email.id === event.data.primary_email_address_id,
+          )?.email_address ?? email_addresses[0]?.email_address;
 
         if (!primaryEmail) {
           console.error("❌ Updated Clerk user has no email address:", id);
@@ -107,7 +105,7 @@ export async function POST(req: Request) {
 
         if (!existingUser) {
           console.warn(
-            `⚠️ User does not exist in database. Creating user: ${id}`
+            `⚠️ User does not exist in database. Creating user: ${id}`,
           );
 
           await createUser({
@@ -147,9 +145,7 @@ export async function POST(req: Request) {
         });
 
         if (!existingUser) {
-          console.warn(
-            `⚠️ Deleted Clerk user not found in database: ${id}`
-          );
+          console.warn(`⚠️ Deleted Clerk user not found in database: ${id}`);
 
           break;
         }
@@ -173,10 +169,7 @@ export async function POST(req: Request) {
         console.log(`ℹ️ Ignoring Clerk event: ${event.type}`);
     }
   } catch (error) {
-    console.error(
-      `❌ Failed to process Clerk event: ${event.type}`,
-      error
-    );
+    console.error(`❌ Failed to process Clerk event: ${event.type}`, error);
 
     return new Response("Webhook processing failed", {
       status: 500,

@@ -6,32 +6,20 @@ export default function Home() {
       {/* Navigation */}
       <header className="border-b border-white/10">
         <div className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-6 lg:px-8">
-          <Link
-            href="/"
-            className="text-2xl font-semibold tracking-[-0.04em]"
-          >
+          <Link href="/" className="text-2xl font-semibold tracking-[-0.04em]">
             Lumora
           </Link>
 
           <nav className="hidden items-center gap-8 text-sm text-white/70 md:flex">
-            <Link
-              href="#about"
-              className="transition hover:text-white"
-            >
+            <Link href="#about" className="transition hover:text-white">
               About
             </Link>
 
-            <Link
-              href="#features"
-              className="transition hover:text-white"
-            >
+            <Link href="#features" className="transition hover:text-white">
               Features
             </Link>
 
-            <Link
-              href="#premium"
-              className="transition hover:text-white"
-            >
+            <Link href="#premium" className="transition hover:text-white">
               Premium
             </Link>
           </nav>
@@ -64,8 +52,8 @@ export default function Home() {
 
             <p className="mt-8 max-w-2xl text-lg leading-8 text-white/60 sm:text-xl">
               Lumora is a premium dating experience built around genuine
-              connections, thoughtful discovery, and conversations that
-              actually matter.
+              connections, thoughtful discovery, and conversations that actually
+              matter.
             </p>
 
             <div className="mt-10 flex flex-col gap-4 sm:flex-row">
@@ -96,10 +84,7 @@ export default function Home() {
       </section>
 
       {/* About */}
-      <section
-        id="about"
-        className="border-t border-white/10 bg-white/[0.02]"
-      >
+      <section id="about" className="border-t border-white/10 bg-white/[0.02]">
         <div className="mx-auto grid w-full max-w-7xl gap-12 px-6 py-24 lg:grid-cols-2 lg:px-8 lg:py-32">
           <div>
             <p className="text-sm font-medium uppercase tracking-[0.25em] text-purple-300">
@@ -177,8 +162,8 @@ export default function Home() {
 
               <p className="mt-6 text-lg leading-8 text-white/60">
                 Unlock a more intentional dating experience with premium
-                features designed to give you more control over how you
-                discover and connect.
+                features designed to give you more control over how you discover
+                and connect.
               </p>
 
               <Link

@@ -70,7 +70,6 @@
 }
 
 :root {
-  
   --lumora-glow: oklch(0.65 0.2 292 / 20%);
   --lumora-premium: oklch(0.78 0.16 75);
   --lumora-love: oklch(0.68 0.2 350);
@@ -127,7 +126,6 @@
 }
 
 .dark {
- 
   --lumora-glow: oklch(0.68 0.2 292 / 24%);
   --lumora-premium: oklch(0.82 0.16 75);
   --lumora-love: oklch(0.72 0.2 350);
