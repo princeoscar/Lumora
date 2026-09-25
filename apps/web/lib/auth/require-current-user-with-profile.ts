@@ -11,7 +11,7 @@ export async function requireCurrentUserWithProfile() {
   }
 
   if (!canAccessApp(user)) {
-    redirect("/sign-in");
+    redirect("/account-disabled");
   }
 
   if (!user.onboardingCompleted || !user.profile) {

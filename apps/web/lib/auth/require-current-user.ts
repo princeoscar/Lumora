@@ -11,7 +11,7 @@ export async function requireCurrentUser() {
   }
 
   if (!canAccessApp(user)) {
-    redirect("/sign-in");
+    redirect("/account-disabled");
   }
 
   return user;
