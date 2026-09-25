@@ -4,6 +4,7 @@ type CreateUserData = {
   clerkId: string;
   email: string;
   username?: string | null;
+  emailVerified?: boolean;
 };
 
 export async function createUser(data: CreateUserData) {
@@ -22,6 +23,7 @@ export async function createUser(data: CreateUserData) {
       clerkId: data.clerkId,
       email: data.email,
       username: data.username ?? null,
+      emailVerified: data.emailVerified ?? false,
     },
   });
 }

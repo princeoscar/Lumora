@@ -60,9 +60,9 @@ export async function POST(req: Request) {
         const primaryEmail =
           email_addresses.find(
             (email) => email.id === event.data.primary_email_address_id,
-          )?.email_address ?? email_addresses[0]?.email_address;
+          ) ?? email_addresses[0];
 
-        if (!primaryEmail) {
+        if (!primaryEmail?.email_address) {
           console.error("❌ Clerk user has no email address:", id);
 
           return new Response("User email is required", {
@@ -72,8 +72,9 @@ export async function POST(req: Request) {
 
         await createUser({
           clerkId: id,
-          email: primaryEmail,
+          email: primaryEmail.email_address,
           username,
+          emailVerified: primaryEmail.verification?.status === "verified",
         });
 
         console.log(`✅ User synced to database: ${id}`);
@@ -87,9 +88,9 @@ export async function POST(req: Request) {
         const primaryEmail =
           email_addresses.find(
             (email) => email.id === event.data.primary_email_address_id,
-          )?.email_address ?? email_addresses[0]?.email_address;
+          ) ?? email_addresses[0];
 
-        if (!primaryEmail) {
+        if (!primaryEmail?.email_address) {
           console.error("❌ Updated Clerk user has no email address:", id);
 
           return new Response("User email is required", {
@@ -110,8 +111,9 @@ export async function POST(req: Request) {
 
           await createUser({
             clerkId: id,
-            email: primaryEmail,
+            email: primaryEmail.email_address,
             username,
+            emailVerified: primaryEmail.verification?.status === "verified",
           });
 
           console.log(`✅ Missing user created from update event: ${id}`);
@@ -124,8 +126,9 @@ export async function POST(req: Request) {
             clerkId: id,
           },
           data: {
-            email: primaryEmail,
+            email: primaryEmail.email_address,
             username: username ?? null,
+            emailVerified: primaryEmail.verification?.status === "verified",
             deletedAt: null,
           },
         });
