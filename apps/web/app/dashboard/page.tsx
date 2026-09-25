@@ -1,7 +1,13 @@
+import { redirect } from "next/navigation";
+
 import { requireCurrentUser } from "@/lib/auth/require-current-user";
 
 export default async function DashboardPage() {
   const user = await requireCurrentUser();
+
+  if (!user.onboardingCompleted) {
+    redirect("/onboarding");
+  }
 
   return (
     <main className="flex min-h-screen flex-col gap-4 p-10">
