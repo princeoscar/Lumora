@@ -2,19 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 
-import { getCurrentUser } from "@/lib/auth/get-current-user";
+import { requireCurrentUser } from "@/lib/auth/require-current-user";
 import { prisma } from "@/lib/prisma";
 import { onboardingSchema } from "@/lib/validations/onboarding";
 
 export async function completeOnboarding(input: unknown) {
-  const user = await getCurrentUser();
-
-  if (!user) {
-    return {
-      success: false,
-      error: "You must be signed in to complete onboarding.",
-    };
-  }
+  const user = await requireCurrentUser();
 
   const validation = onboardingSchema.safeParse(input);
 
