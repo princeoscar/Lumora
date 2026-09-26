@@ -3,9 +3,11 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ArrowDown, ArrowUp } from "lucide-react";
 
-import { setPrimaryProfileMedia } from "@/actions/profile-media-primary";
 import { deleteProfileMedia } from "@/actions/profile-media-delete";
+import { reorderProfileMedia } from "@/actions/profile-media-order";
+import { setPrimaryProfileMedia } from "@/actions/profile-media-primary";
 import type { ProfileMedia } from "@/types/profile";
 import { Button } from "@/components/ui/button";
 
@@ -18,6 +20,7 @@ export function ProfileMediaManager({ media }: ProfileMediaManagerProps) {
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [settingPrimaryId, setSettingPrimaryId] = useState<string | null>(null);
+  const [reorderingId, setReorderingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function handleDelete(mediaId: string) {
@@ -73,6 +76,31 @@ export function ProfileMediaManager({ media }: ProfileMediaManagerProps) {
     }
   }
 
+  async function handleReorder(mediaId: string, direction: "UP" | "DOWN") {
+    setReorderingId(mediaId);
+    setError(null);
+
+    try {
+      const result = await reorderProfileMedia({
+        mediaId,
+        direction,
+      });
+
+      if (!result.success) {
+        setError(
+          result.error ?? "We couldn't reorder your photos. Please try again.",
+        );
+        return;
+      }
+
+      router.refresh();
+    } catch {
+      setError("We couldn't reorder your photos. Please try again.");
+    } finally {
+      setReorderingId(null);
+    }
+  }
+
   if (media.length === 0) {
     return null;
   }
@@ -86,10 +114,18 @@ export function ProfileMediaManager({ media }: ProfileMediaManagerProps) {
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {media.map((item) => {
+        {media.map((item, index) => {
           const isDeleting = deletingId === item.id;
           const isSettingPrimary = settingPrimaryId === item.id;
-          const isBusy = deletingId !== null || settingPrimaryId !== null;
+          const isReordering = reorderingId === item.id;
+
+          const isBusy =
+            deletingId !== null ||
+            settingPrimaryId !== null ||
+            reorderingId !== null;
+
+          const canMoveUp = index > 0;
+          const canMoveDown = index < media.length - 1;
 
           return (
             <div
@@ -118,6 +154,30 @@ export function ProfileMediaManager({ media }: ProfileMediaManagerProps) {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isBusy || !canMoveUp}
+                    onClick={() => handleReorder(item.id, "UP")}
+                    aria-label="Move photo up"
+                  >
+                    <ArrowUp />
+                    {isReordering ? "Moving..." : "Up"}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={isBusy || !canMoveDown}
+                    onClick={() => handleReorder(item.id, "DOWN")}
+                    aria-label="Move photo down"
+                  >
+                    <ArrowDown />
+                    {isReordering ? "Moving..." : "Down"}
+                  </Button>
+
                   {!item.isProfilePhoto && (
                     <Button
                       type="button"
