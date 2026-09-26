@@ -1,7 +1,7 @@
 "use server";
 
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
-import { cloudinary } from "@/lib/cloudinary";
+import { cloudinary, cloudinaryConfig } from "@/lib/cloudinary";
 
 export async function getProfileUploadSignature() {
   const user = await requireCurrentUserWithProfile();
@@ -14,13 +14,13 @@ export async function getProfileUploadSignature() {
       folder,
       timestamp,
     },
-    cloudinary.config().api_secret ?? "",
+    cloudinaryConfig.api_secret,
   );
 
   return {
     success: true,
-    cloudName: cloudinary.config().cloud_name,
-    apiKey: cloudinary.config().api_key,
+    cloudName: cloudinaryConfig.cloud_name,
+    apiKey: cloudinaryConfig.api_key,
     timestamp,
     folder,
     signature,

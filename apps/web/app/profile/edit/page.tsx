@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ProfileForm } from "@/components/forms/profile-form";
+import { ProfileMediaUpload } from "@/components/forms/profile-media-upload";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
@@ -44,6 +45,16 @@ export default async function ProfileEditPage() {
 
           <CardContent>
             <ProfileForm profile={profile} />
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Profile photos</CardTitle>
+          </CardHeader>
+
+          <CardContent>
+            <ProfileMediaUpload />
           </CardContent>
         </Card>
       </div>
