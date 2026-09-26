@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { setPrimaryProfileMedia } from "@/actions/profile-media-primary";
 import { deleteProfileMedia } from "@/actions/profile-media-delete";
 import type { ProfileMedia } from "@/types/profile";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ export function ProfileMediaManager({ media }: ProfileMediaManagerProps) {
   const router = useRouter();
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [settingPrimaryId, setSettingPrimaryId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function handleDelete(mediaId: string) {
@@ -48,6 +50,29 @@ export function ProfileMediaManager({ media }: ProfileMediaManagerProps) {
     }
   }
 
+  async function handleSetPrimary(mediaId: string) {
+    setSettingPrimaryId(mediaId);
+    setError(null);
+
+    try {
+      const result = await setPrimaryProfileMedia({ mediaId });
+
+      if (!result.success) {
+        setError(
+          result.error ??
+            "We couldn't update your primary photo. Please try again.",
+        );
+        return;
+      }
+
+      router.refresh();
+    } catch {
+      setError("We couldn't update your primary photo. Please try again.");
+    } finally {
+      setSettingPrimaryId(null);
+    }
+  }
+
   if (media.length === 0) {
     return null;
   }
@@ -63,6 +88,8 @@ export function ProfileMediaManager({ media }: ProfileMediaManagerProps) {
       <div className="grid gap-4 sm:grid-cols-2">
         {media.map((item) => {
           const isDeleting = deletingId === item.id;
+          const isSettingPrimary = settingPrimaryId === item.id;
+          const isBusy = deletingId !== null || settingPrimaryId !== null;
 
           return (
             <div
@@ -79,28 +106,40 @@ export function ProfileMediaManager({ media }: ProfileMediaManagerProps) {
                 />
               </div>
 
-              <div className="flex items-center justify-between gap-3 p-3">
-                <div className="min-w-0">
-                  {item.isProfilePhoto ? (
-                    <p className="truncate text-sm font-medium">
-                      Profile photo
-                    </p>
-                  ) : (
-                    <p className="truncate text-sm text-muted-foreground">
-                      Profile photo
-                    </p>
+              <div className="grid gap-3 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-medium">
+                    {item.isProfilePhoto ? "Primary photo" : "Profile photo"}
+                  </p>
+
+                  {item.isProfilePhoto && (
+                    <span className="text-xs text-primary">Primary</span>
                   )}
                 </div>
 
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  disabled={isDeleting || deletingId !== null}
-                  onClick={() => handleDelete(item.id)}
-                >
-                  {isDeleting ? "Deleting..." : "Delete"}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  {!item.isProfilePhoto && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={isBusy}
+                      onClick={() => handleSetPrimary(item.id)}
+                    >
+                      {isSettingPrimary ? "Setting..." : "Set as primary"}
+                    </Button>
+                  )}
+
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    disabled={isBusy}
+                    onClick={() => handleDelete(item.id)}
+                  >
+                    {isDeleting ? "Deleting..." : "Delete"}
+                  </Button>
+                </div>
               </div>
             </div>
           );
