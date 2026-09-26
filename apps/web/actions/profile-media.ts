@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
 import { prisma } from "@/lib/prisma";
+import { MAX_PROFILE_PHOTOS } from "@/lib/profile/constants";
 
 const profileMediaSchema = z.object({
   publicId: z.string().trim().min(1).max(500),
@@ -40,8 +41,32 @@ export async function addProfileMedia(input: unknown) {
       where: {
         userId: user.id,
         deletedAt: null,
+        mediaType: "IMAGE",
       },
     });
+
+    if (mediaCount >= MAX_PROFILE_PHOTOS) {
+      return {
+        success: false,
+        error: `You can have up to ${MAX_PROFILE_PHOTOS} profile photos.`,
+      };
+    }
+
+    const lastMedia = await prisma.userMedia.findFirst({
+      where: {
+        userId: user.id,
+        deletedAt: null,
+        mediaType: "IMAGE",
+      },
+      orderBy: {
+        displayOrder: "desc",
+      },
+      select: {
+        displayOrder: true,
+      },
+    });
+
+    const nextDisplayOrder = (lastMedia?.displayOrder ?? -1) + 1;
 
     const media = await prisma.userMedia.create({
       data: {
@@ -51,7 +76,7 @@ export async function addProfileMedia(input: unknown) {
         mediaType: "IMAGE",
         isProfilePhoto: mediaCount === 0,
         isVerified: false,
-        displayOrder: mediaCount,
+        displayOrder: nextDisplayOrder,
       },
     });
 
