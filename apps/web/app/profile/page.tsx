@@ -108,11 +108,42 @@ export default async function ProfilePage() {
                 </p>
                 <p className="mt-1 font-medium">{profile.profileVisibility}</p>
               </div>
+            </CardContent>
+          </Card>
 
-              <div>
-                <p className="text-sm text-muted-foreground">Profile photos</p>
-                <p className="mt-1 font-medium">{profile.media.length}</p>
-              </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Photos</CardTitle>
+              <CardDescription>
+                Your profile photos will appear here.
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent>
+              {profile.media.length === 0 ? (
+                <div className="rounded-lg border border-dashed p-8 text-center">
+                  <p className="font-medium">No profile photos yet</p>
+
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Add photos to help people get to know you better.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {profile.media.map((media) => (
+                    <div
+                      key={media.id}
+                      className="overflow-hidden rounded-lg border"
+                    >
+                      <img
+                        src={media.url}
+                        alt="Profile photo"
+                        className="aspect-square w-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
