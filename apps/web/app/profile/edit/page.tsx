@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ProfileForm } from "@/components/forms/profile-form";
+import { ProfileMediaManager } from "@/components/forms/profile-media-manager";
 import { ProfileMediaUpload } from "@/components/forms/profile-media-upload";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,8 +54,10 @@ export default async function ProfileEditPage() {
             <CardTitle>Profile photos</CardTitle>
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="grid gap-6">
             <ProfileMediaUpload />
+
+            <ProfileMediaManager media={profile.media} />
           </CardContent>
         </Card>
       </div>
