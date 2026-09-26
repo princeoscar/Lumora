@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
 import { getProfileWithMediaByUserId } from "@/lib/db/profile";
 import {
@@ -7,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default async function ProfilePage() {
   const user = await requireCurrentUserWithProfile();
@@ -21,19 +23,26 @@ export default async function ProfilePage() {
   return (
     <main className="min-h-screen p-6 md:p-10">
       <div className="mx-auto max-w-3xl">
-        <div className="mb-8">
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">
-            Your profile
-          </p>
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">
+              Your profile
+            </p>
 
-          <h1 className="mt-2 text-4xl font-semibold tracking-tight">
-            {profile.displayName ||
-              `${profile.firstName} ${profile.lastName ?? ""}`.trim()}
-          </h1>
+            <h1 className="mt-2 text-4xl font-semibold tracking-tight">
+              {profile.displayName ||
+                `${profile.firstName} ${profile.lastName ?? ""}`.trim()}
+            </h1>
 
-          <p className="mt-2 text-muted-foreground">
-            This is how your profile information is currently stored in Lumora.
-          </p>
+            <p className="mt-2 text-muted-foreground">
+              This is how your profile information is currently stored in
+              Lumora.
+            </p>
+          </div>
+
+          <Button asChild>
+            <Link href="/profile/edit">Edit Profile</Link>
+          </Button>
         </div>
 
         <div className="grid gap-6">
