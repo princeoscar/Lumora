@@ -18,7 +18,18 @@ export default async function ProfilePage() {
     return null;
   }
 
-  const age = new Date().getFullYear() - profile.dateOfBirth.getFullYear();
+  const today = new Date();
+
+  let age = today.getFullYear() - profile.dateOfBirth.getFullYear();
+
+  const birthdayHasPassed =
+    today.getMonth() > profile.dateOfBirth.getMonth() ||
+    (today.getMonth() === profile.dateOfBirth.getMonth() &&
+      today.getDate() >= profile.dateOfBirth.getDate());
+
+  if (!birthdayHasPassed) {
+    age -= 1;
+  }
 
   return (
     <main className="min-h-screen p-6 md:p-10">
