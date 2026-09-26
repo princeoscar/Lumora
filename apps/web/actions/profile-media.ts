@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
+import { cloudinary } from "@/lib/cloudinary";
 import { prisma } from "@/lib/prisma";
 import { MAX_PROFILE_PHOTOS } from "@/lib/profile/constants";
 
@@ -25,7 +26,7 @@ export async function addProfileMedia(input: unknown) {
     };
   }
 
-  const { publicId, secureUrl } = validation.data;
+  const { publicId } = validation.data;
 
   const expectedFolder = `lumora/profiles/${user.id}/`;
 
@@ -37,6 +38,23 @@ export async function addProfileMedia(input: unknown) {
   }
 
   try {
+    const cloudinaryResource = await cloudinary.api.resource(publicId, {
+      resource_type: "image",
+      type: "upload",
+    });
+
+    if (
+      cloudinaryResource.public_id !== publicId ||
+      cloudinaryResource.resource_type !== "image" ||
+      cloudinaryResource.type !== "upload" ||
+      !cloudinaryResource.secure_url
+    ) {
+      return {
+        success: false,
+        error: "We couldn't verify this uploaded image.",
+      };
+    }
+
     const mediaCount = await prisma.userMedia.count({
       where: {
         userId: user.id,
@@ -71,8 +89,8 @@ export async function addProfileMedia(input: unknown) {
     const media = await prisma.userMedia.create({
       data: {
         userId: user.id,
-        url: secureUrl,
-        publicId,
+        url: cloudinaryResource.secure_url,
+        publicId: cloudinaryResource.public_id,
         mediaType: "IMAGE",
         isProfilePhoto: mediaCount === 0,
         isVerified: false,
