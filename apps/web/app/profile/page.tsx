@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
 import { getProfileWithMediaByUserId } from "@/lib/db/profile";
@@ -133,12 +134,14 @@ export default async function ProfilePage() {
                   {profile.media.map((media) => (
                     <div
                       key={media.id}
-                      className="overflow-hidden rounded-lg border"
+                      className="relative aspect-square overflow-hidden rounded-lg border"
                     >
-                      <img
+                      <Image
                         src={media.url}
                         alt="Profile photo"
-                        className="aspect-square w-full object-cover"
+                        fill
+                        sizes="(max-width: 640px) 100vw, 50vw"
+                        className="object-cover"
                       />
                     </div>
                   ))}
