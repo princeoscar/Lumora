@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ProfilePreview } from "@/components/profile/profile-preview";
+import { ProfileCompletionCard } from "@/components/profile/profile-completion-card";
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
 import { getProfileWithMediaByUserId } from "@/lib/db/profile";
 import {
@@ -56,6 +57,10 @@ export default async function ProfilePage() {
           <Button asChild>
             <Link href="/profile/edit">Edit Profile</Link>
           </Button>
+        </div>
+
+        <div className="mb-8">
+          <ProfileCompletionCard profile={profile} />
         </div>
 
         <div className="grid gap-8">
