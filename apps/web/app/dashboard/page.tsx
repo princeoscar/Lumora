@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 
+import { Button } from "@/components/ui/button";
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
 
 export default async function DashboardPage() {
@@ -8,12 +10,18 @@ export default async function DashboardPage() {
 
   return (
     <main className="flex min-h-screen flex-col gap-4 p-10">
-      <header className="flex items-center justify-between">
+      <header className="flex items-center justify-between gap-4">
         <h1 className="text-3xl font-semibold">
           Welcome, {profile?.firstName}
         </h1>
 
-        <UserButton />
+        <div className="flex items-center gap-3">
+          <Button asChild variant="outline">
+            <Link href="/profile">Profile</Link>
+          </Button>
+
+          <UserButton />
+        </div>
       </header>
 
       <div className="rounded-lg border bg-card p-6">
