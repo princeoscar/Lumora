@@ -59,8 +59,8 @@ export default async function Home() {
       </header>
 
       {/* Hero */}
-      <section className="relativeoverflow-hidden">
-        <div className="absolute left-1/2 top-[-180px] h-[500px] w-[500px] -translate-x-1/2 rounded-fullbg-purple-600/20 blur-[120px]" />
+      <section className="relative  overflow-hidden">
+        <div className="pointer-events-none absolute left-1/2 top-[-180px] h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-purple-600/20 blur-[120px]" />
 
         <div className="relative mx-auto flex min-h-[calc(100vh-80px)] w-full max-w-7xl items-center px-6 py-24 lg:px-8">
           <div className="max-w-4xl">
