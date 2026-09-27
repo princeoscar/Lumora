@@ -54,9 +54,15 @@ export default async function ProfilePage() {
             </p>
           </div>
 
-          <Button asChild>
-            <Link href="/profile/edit">Edit Profile</Link>
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button asChild variant="outline">
+              <Link href="/profile/preferences">Preferences</Link>
+            </Button>
+
+            <Button asChild>
+              <Link href="/profile/edit">Edit Profile</Link>
+            </Button>
+          </div>
         </div>
 
         <div className="mb-8">
