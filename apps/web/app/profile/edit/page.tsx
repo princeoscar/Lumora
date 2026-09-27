@@ -4,9 +4,16 @@ import { ProfileForm } from "@/components/forms/profile-form";
 import { ProfileMediaManager } from "@/components/forms/profile-media-manager";
 import { ProfileMediaUpload } from "@/components/forms/profile-media-upload";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
 import { getProfileWithMediaByUserId } from "@/lib/db/profile";
+import { MAX_PROFILE_PHOTOS } from "@/lib/profile/constants";
 
 export default async function ProfileEditPage() {
   const user = await requireCurrentUserWithProfile();
@@ -52,10 +59,36 @@ export default async function ProfileEditPage() {
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>Profile photos</CardTitle>
+
+            <CardDescription>
+              {profile.media.length} of {MAX_PROFILE_PHOTOS} photos added.
+            </CardDescription>
           </CardHeader>
 
           <CardContent className="grid gap-6">
-            <ProfileMediaUpload />
+            {profile.media.length < MAX_PROFILE_PHOTOS ? (
+              <div className="grid gap-2">
+                <p className="text-sm font-medium">
+                  {MAX_PROFILE_PHOTOS - profile.media.length}{" "}
+                  {MAX_PROFILE_PHOTOS - profile.media.length === 1
+                    ? "photo"
+                    : "photos"}{" "}
+                  remaining.
+                </p>
+
+                <ProfileMediaUpload />
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed p-4">
+                <p className="text-sm font-medium">
+                  You&apos;ve reached the maximum number of profile photos.
+                </p>
+
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Delete an existing photo before uploading another one.
+                </p>
+              </div>
+            )}
 
             <ProfileMediaManager media={profile.media} />
           </CardContent>
