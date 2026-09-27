@@ -29,7 +29,7 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-[#0b0812] text-white">
       {/* Navigation */}
-      <header className="border-b border-white/10">
+      <header className="relative z-50 border-b border-white/10">
         <div className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-6 lg:px-8">
           <Link href="/" className="text-2xl font-semibold tracking-[-0.04em]">
             Lumora
@@ -59,7 +59,7 @@ export default async function Home() {
       </header>
 
       {/* Hero */}
-      <section className="relative  overflow-hidden">
+      <section className="relative z-0 overflow-hidden">
         <div className="pointer-events-none absolute left-1/2 top-[-180px] h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-purple-600/20 blur-[120px]" />
 
         <div className="relative mx-auto flex min-h-[calc(100vh-80px)] w-full max-w-7xl items-center px-6 py-24 lg:px-8">
