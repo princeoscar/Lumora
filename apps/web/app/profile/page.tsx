@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ProfilePreview } from "@/components/profile/profile-preview";
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
 import { getProfileWithMediaByUserId } from "@/lib/db/profile";
 import {
@@ -57,129 +58,152 @@ export default async function ProfilePage() {
           </Button>
         </div>
 
-        <div className="grid gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>About you</CardTitle>
-              <CardDescription>
-                Your personal profile information.
-              </CardDescription>
-            </CardHeader>
+        <div className="grid gap-8">
+          <section>
+            <div className="mb-4">
+              <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">
+                Profile preview
+              </p>
 
-            <CardContent className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <p className="text-sm text-muted-foreground">First name</p>
-                <p className="mt-1 font-medium">{profile.firstName}</p>
-              </div>
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight">
+                How your profile appears
+              </h2>
 
-              <div>
-                <p className="text-sm text-muted-foreground">Last name</p>
-                <p className="mt-1 font-medium">
-                  {profile.lastName || "Not provided"}
-                </p>
-              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                This preview shows the information other people will see on your
+                profile.
+              </p>
+            </div>
 
-              <div>
-                <p className="text-sm text-muted-foreground">Age</p>
-                <p className="mt-1 font-medium">{age}</p>
-              </div>
+            <ProfilePreview profile={profile} />
+          </section>
 
-              <div>
-                <p className="text-sm text-muted-foreground">Gender</p>
-                <p className="mt-1 font-medium">{profile.gender}</p>
-              </div>
+          <div className="grid gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>About you</CardTitle>
+                <CardDescription>
+                  Your personal profile information.
+                </CardDescription>
+              </CardHeader>
 
-              <div>
-                <p className="text-sm text-muted-foreground">Occupation</p>
-                <p className="mt-1 font-medium">
-                  {profile.occupation || "Not provided"}
-                </p>
-              </div>
+              <CardContent className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <p className="text-sm text-muted-foreground">First name</p>
+                  <p className="mt-1 font-medium">{profile.firstName}</p>
+                </div>
 
-              <div>
-                <p className="text-sm text-muted-foreground">Company</p>
-                <p className="mt-1 font-medium">
-                  {profile.company || "Not provided"}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  Profile visibility
-                </p>
-                <p className="mt-1 font-medium">{profile.profileVisibility}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Photos</CardTitle>
-              <CardDescription>
-                Your profile photos will appear here.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent>
-              {profile.media.length === 0 ? (
-                <div className="rounded-lg border border-dashed p-8 text-center">
-                  <p className="font-medium">No profile photos yet</p>
-
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Add photos to help people get to know you better.
+                <div>
+                  <p className="text-sm text-muted-foreground">Last name</p>
+                  <p className="mt-1 font-medium">
+                    {profile.lastName || "Not provided"}
                   </p>
                 </div>
-              ) : (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {profile.media.map((media) => (
-                    <div
-                      key={media.id}
-                      className="relative aspect-square overflow-hidden rounded-lg border"
-                    >
-                      <Image
-                        src={media.url}
-                        alt="Profile photo"
-                        fill
-                        sizes="(max-width: 640px) 100vw, 50vw"
-                        className="object-cover"
-                      />
-                    </div>
-                  ))}
+
+                <div>
+                  <p className="text-sm text-muted-foreground">Age</p>
+                  <p className="mt-1 font-medium">{age}</p>
                 </div>
-              )}
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Bio</CardTitle>
-              <CardDescription>
-                A short introduction that represents you.
-              </CardDescription>
-            </CardHeader>
+                <div>
+                  <p className="text-sm text-muted-foreground">Gender</p>
+                  <p className="mt-1 font-medium">{profile.gender}</p>
+                </div>
 
-            <CardContent>
-              <p className="leading-7 text-muted-foreground">
-                {profile.bio || "You have not added a bio yet."}
-              </p>
-            </CardContent>
-          </Card>
+                <div>
+                  <p className="text-sm text-muted-foreground">Occupation</p>
+                  <p className="mt-1 font-medium">
+                    {profile.occupation || "Not provided"}
+                  </p>
+                </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Account</CardTitle>
-              <CardDescription>
-                Your Lumora account information.
-              </CardDescription>
-            </CardHeader>
+                <div>
+                  <p className="text-sm text-muted-foreground">Company</p>
+                  <p className="mt-1 font-medium">
+                    {profile.company || "Not provided"}
+                  </p>
+                </div>
 
-            <CardContent>
-              <div>
-                <p className="text-sm text-muted-foreground">Email</p>
-                <p className="mt-1 font-medium">{user.email}</p>
-              </div>
-            </CardContent>
-          </Card>
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Profile visibility
+                  </p>
+                  <p className="mt-1 font-medium">
+                    {profile.profileVisibility}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Photos</CardTitle>
+                <CardDescription>
+                  Your profile photos will appear here.
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent>
+                {profile.media.length === 0 ? (
+                  <div className="rounded-lg border border-dashed p-8 text-center">
+                    <p className="font-medium">No profile photos yet</p>
+
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Add photos to help people get to know you better.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {profile.media.map((media) => (
+                      <div
+                        key={media.id}
+                        className="relative aspect-square overflow-hidden rounded-lg border"
+                      >
+                        <Image
+                          src={media.url}
+                          alt="Profile photo"
+                          fill
+                          sizes="(max-width: 640px) 100vw, 50vw"
+                          className="object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Bio</CardTitle>
+                <CardDescription>
+                  A short introduction that represents you.
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent>
+                <p className="leading-7 text-muted-foreground">
+                  {profile.bio || "You have not added a bio yet."}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Account</CardTitle>
+                <CardDescription>
+                  Your Lumora account information.
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent>
+                <div>
+                  <p className="text-sm text-muted-foreground">Email</p>
+                  <p className="mt-1 font-medium">{user.email}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </main>
