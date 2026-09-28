@@ -161,3 +161,65 @@ export async function getDiscoveryCandidates(
       };
     });
 }
+
+export async function isDiscoverableTarget(
+  userId: string,
+  targetUserId: string,
+): Promise<boolean> {
+  if (userId === targetUserId) {
+    return false;
+  }
+
+  const preferences = await prisma.discoveryPreference.findUnique({
+    where: {
+      userId,
+    },
+    select: {
+      minAge: true,
+      maxAge: true,
+      interestedInGenders: true,
+    },
+  });
+
+  if (!preferences || preferences.interestedInGenders.length === 0) {
+    return false;
+  }
+
+  const { minimumDateOfBirth, maximumDateOfBirth } = getAgeDateBoundaries(
+    preferences.minAge,
+    preferences.maxAge,
+  );
+
+  const target = await prisma.user.findFirst({
+    where: {
+      id: targetUserId,
+      accountStatus: "ACTIVE",
+      deletedAt: null,
+      onboardingCompleted: true,
+      profile: {
+        is: {
+          deletedAt: null,
+          profileVisibility: "PUBLIC",
+          gender: {
+            in: preferences.interestedInGenders,
+          },
+          dateOfBirth: {
+            gte: minimumDateOfBirth,
+            lte: maximumDateOfBirth,
+          },
+        },
+      },
+      media: {
+        some: {
+          deletedAt: null,
+          mediaType: "IMAGE",
+        },
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  return target !== null;
+}
