@@ -8,22 +8,24 @@ datasource db {
 }
 
 model User {
-  id                  String               @id @default(cuid())
-  clerkId             String               @unique
-  email               String               @unique
-  username            String?              @unique
-  role                UserRole             @default(USER)
-  accountStatus       AccountStatus        @default(PENDING)
-  verificationStatus  VerificationStatus   @default(UNVERIFIED)
-  emailVerified       Boolean              @default(false)
-  onboardingCompleted Boolean              @default(false)
-  lastActiveAt        DateTime?
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  deletedAt           DateTime?
-  media               UserMedia[]
-  profile             UserProfile?
-  discoveryPreference DiscoveryPreference?
+  id                       String               @id @default(cuid())
+  clerkId                  String               @unique
+  email                    String               @unique
+  username                 String?              @unique
+  role                     UserRole             @default(USER)
+  accountStatus            AccountStatus        @default(PENDING)
+  verificationStatus       VerificationStatus   @default(UNVERIFIED)
+  emailVerified            Boolean              @default(false)
+  onboardingCompleted      Boolean              @default(false)
+  lastActiveAt             DateTime?
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt
+  deletedAt                DateTime?
+  media                    UserMedia[]
+  profile                  UserProfile?
+  discoveryPreference      DiscoveryPreference?
+  sentDiscoveryActions     DiscoveryAction[]    @relation("DiscoveryActionActor")
+  receivedDiscoveryActions DiscoveryAction[]    @relation("DiscoveryActionTarget")
 
   @@index([email])
   @@index([username])
@@ -61,6 +63,22 @@ model DiscoveryPreference {
   updatedAt           DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model DiscoveryAction {
+  id           String              @id @default(cuid())
+  userId       String
+  targetUserId String
+  action       DiscoveryActionType
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  user   User @relation("DiscoveryActionActor", fields: [userId], references: [id], onDelete: Cascade)
+  target User @relation("DiscoveryActionTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, targetUserId])
+  @@index([userId, action])
+  @@index([targetUserId, action])
 }
 
 model UserMedia {
@@ -115,4 +133,9 @@ enum VerificationStatus {
 enum MediaType {
   IMAGE
   VIDEO
+}
+
+enum DiscoveryActionType {
+  LIKE
+  PASS
 }
