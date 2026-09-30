@@ -28,6 +28,7 @@ model User {
   receivedDiscoveryActions DiscoveryAction[]    @relation("DiscoveryActionTarget")
   matchesAsUser            Match[]              @relation("MatchUser")
   matchesAsMatchedUser     Match[]              @relation("MatchMatchedUser")
+  messagesSent             Message[]            @relation("MessageSender")
 
   @@index([email])
   @@index([username])
@@ -89,12 +90,31 @@ model Match {
   matchedUserId String
   createdAt     DateTime @default(now())
 
-  user        User @relation("MatchUser", fields: [userId], references: [id], onDelete: Cascade)
-  matchedUser User @relation("MatchMatchedUser", fields: [matchedUserId], references: [id], onDelete: Cascade)
+  user        User      @relation("MatchUser", fields: [userId], references: [id], onDelete: Cascade)
+  matchedUser User      @relation("MatchMatchedUser", fields: [matchedUserId], references: [id], onDelete: Cascade)
+  messages    Message[]
 
   @@unique([userId, matchedUserId])
   @@index([userId, createdAt])
   @@index([matchedUserId, createdAt])
+}
+
+model Message {
+  id        String    @id @default(cuid())
+  matchId   String
+  senderId  String
+  content   String    @db.VarChar(2000)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  editedAt  DateTime?
+  deletedAt DateTime?
+  readAt    DateTime?
+
+  match  Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  sender User  @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([matchId, createdAt])
+  @@index([senderId, createdAt])
 }
 
 model UserMedia {
