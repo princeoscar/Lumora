@@ -34,6 +34,13 @@ export function MainNav() {
           </Link>
 
           <Link
+            href="/messages"
+            className="rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
+          >
+            Messages
+          </Link>
+
+          <Link
             href="/profile"
             className="rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
           >
