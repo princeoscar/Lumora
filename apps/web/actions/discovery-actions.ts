@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { isDiscoverableTarget } from "@/lib/db/discovery";
 import { requireCurrentUser } from "@/lib/auth/require-current-user";
+import { isDiscoverableTarget } from "@/lib/db/discovery";
 import { prisma } from "@/lib/prisma";
 
 const discoveryActionSchema = z.object({
@@ -39,21 +39,56 @@ export async function saveDiscoveryAction(input: unknown) {
       };
     }
 
-    await prisma.discoveryAction.upsert({
-      where: {
-        userId_targetUserId: {
+    await prisma.$transaction(async (tx) => {
+      await tx.discoveryAction.upsert({
+        where: {
+          userId_targetUserId: {
+            userId: user.id,
+            targetUserId,
+          },
+        },
+        update: {
+          action,
+        },
+        create: {
           userId: user.id,
           targetUserId,
+          action,
         },
-      },
-      update: {
-        action,
-      },
-      create: {
-        userId: user.id,
-        targetUserId,
-        action,
-      },
+      });
+
+      if (action !== "LIKE") {
+        return;
+      }
+
+      const reciprocalLike = await tx.discoveryAction.findUnique({
+        where: {
+          userId_targetUserId: {
+            userId: targetUserId,
+            targetUserId: user.id,
+          },
+        },
+      });
+
+      if (reciprocalLike?.action !== "LIKE") {
+        return;
+      }
+
+      const [firstUserId, secondUserId] = [user.id, targetUserId].sort();
+
+      await tx.match.upsert({
+        where: {
+          userId_matchedUserId: {
+            userId: firstUserId,
+            matchedUserId: secondUserId,
+          },
+        },
+        update: {},
+        create: {
+          userId: firstUserId,
+          matchedUserId: secondUserId,
+        },
+      });
     });
 
     revalidatePath("/discover");
@@ -62,7 +97,9 @@ export async function saveDiscoveryAction(input: unknown) {
       success: true,
       action,
     };
-  } catch {
+  } catch (error) {
+    console.error("❌ Failed to save discovery action:", error);
+
     return {
       success: false,
       error: "We couldn't save your choice. Please try again.",
