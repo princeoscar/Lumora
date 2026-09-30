@@ -3,6 +3,8 @@
 import { z } from "zod";
 
 import { requireCurrentUser } from "@/lib/auth/require-current-user";
+import { getMatchChannelName } from "@/lib/pusher/channels";
+import { pusherServer } from "@/lib/pusher/server";
 import { prisma } from "@/lib/prisma";
 
 const sendMessageSchema = z.object({
@@ -64,6 +66,28 @@ export async function sendMessage(input: unknown) {
         readAt: true,
       },
     });
+
+    try {
+      await pusherServer.trigger(
+        getMatchChannelName(message.matchId),
+        "message.created",
+        {
+          message: {
+            id: message.id,
+            matchId: message.matchId,
+            senderId: message.senderId,
+            content: message.content,
+            createdAt: message.createdAt.toISOString(),
+            updatedAt: message.updatedAt.toISOString(),
+            editedAt: message.editedAt?.toISOString() ?? null,
+            deletedAt: message.deletedAt?.toISOString() ?? null,
+            readAt: message.readAt?.toISOString() ?? null,
+          },
+        },
+      );
+    } catch (error) {
+      console.error("❌ Failed to publish real-time message:", error);
+    }
 
     return {
       success: true,
