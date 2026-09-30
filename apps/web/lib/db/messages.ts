@@ -56,6 +56,7 @@ export async function getMatchMessages(
 export type MessageThread = {
   matchId: string;
   matchedAt: Date;
+  unreadCount: number;
   user: {
     userId: string;
     displayName: string;
@@ -176,6 +177,20 @@ export async function getMessageThreads(
           createdAt: true,
         },
       },
+
+      _count: {
+        select: {
+          messages: {
+            where: {
+              deletedAt: null,
+              readAt: null,
+              senderId: {
+                not: userId,
+              },
+            },
+          },
+        },
+      },
     },
     orderBy: {
       createdAt: "desc",
@@ -202,6 +217,7 @@ export async function getMessageThreads(
     result.push({
       matchId: match.id,
       matchedAt: match.createdAt,
+      unreadCount: match._count.messages,
       user: {
         userId: matchedUser.id,
         displayName:

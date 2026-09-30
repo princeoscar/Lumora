@@ -85,17 +85,27 @@ export default async function MessagesPage() {
                         {thread.user.displayName}, {thread.user.age}
                       </h2>
 
-                      {thread.lastMessage && (
-                        <time className="shrink-0 text-xs text-muted-foreground">
-                          {thread.lastMessage.createdAt.toLocaleDateString(
-                            undefined,
-                            {
-                              month: "short",
-                              day: "numeric",
-                            },
-                          )}
-                        </time>
-                      )}
+                      <div className="flex shrink-0 items-center gap-2">
+                        {thread.lastMessage && (
+                          <time className="text-xs text-muted-foreground">
+                            {thread.lastMessage.createdAt.toLocaleDateString(
+                              undefined,
+                              {
+                                month: "short",
+                                day: "numeric",
+                              },
+                            )}
+                          </time>
+                        )}
+
+                        {thread.unreadCount > 0 && (
+                          <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-2 text-xs font-semibold text-primary-foreground">
+                            {thread.unreadCount > 99
+                              ? "99+"
+                              : thread.unreadCount}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <p className="mt-1 truncate text-sm text-muted-foreground">
