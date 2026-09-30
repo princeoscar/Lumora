@@ -26,6 +26,8 @@ model User {
   discoveryPreference      DiscoveryPreference?
   sentDiscoveryActions     DiscoveryAction[]    @relation("DiscoveryActionActor")
   receivedDiscoveryActions DiscoveryAction[]    @relation("DiscoveryActionTarget")
+  matchesAsUser            Match[]              @relation("MatchUser")
+  matchesAsMatchedUser     Match[]              @relation("MatchMatchedUser")
 
   @@index([email])
   @@index([username])
@@ -79,6 +81,20 @@ model DiscoveryAction {
   @@unique([userId, targetUserId])
   @@index([userId, action])
   @@index([targetUserId, action])
+}
+
+model Match {
+  id            String   @id @default(cuid())
+  userId        String
+  matchedUserId String
+  createdAt     DateTime @default(now())
+
+  user        User @relation("MatchUser", fields: [userId], references: [id], onDelete: Cascade)
+  matchedUser User @relation("MatchMatchedUser", fields: [matchedUserId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, matchedUserId])
+  @@index([userId, createdAt])
+  @@index([matchedUserId, createdAt])
 }
 
 model UserMedia {
