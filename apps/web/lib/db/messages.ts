@@ -216,3 +216,41 @@ export async function getMessageThreads(
 
   return result;
 }
+
+export async function markMatchMessagesAsRead(matchId: string, userId: string) {
+  const match = await prisma.match.findFirst({
+    where: {
+      id: matchId,
+      OR: [{ userId }, { matchedUserId: userId }],
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!match) {
+    return {
+      success: false,
+      updatedCount: 0,
+    };
+  }
+
+  const result = await prisma.message.updateMany({
+    where: {
+      matchId: match.id,
+      senderId: {
+        not: userId,
+      },
+      readAt: null,
+      deletedAt: null,
+    },
+    data: {
+      readAt: new Date(),
+    },
+  });
+
+  return {
+    success: true,
+    updatedCount: result.count,
+  };
+}
