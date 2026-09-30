@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { Webhook } from "svix";
-import { WebhookEvent } from "@clerk/nextjs/server";
+import type { WebhookEvent } from "@clerk/nextjs/server";
 
 import { prisma } from "@/lib/prisma";
 import { createUser } from "@/lib/clerk/create-user";
@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   const secret = process.env.CLERK_WEBHOOK_SECRET;
 
   if (!secret) {
-    console.error("❌ Missing CLERK_WEBHOOK_SECRET");
+    console.error("Missing CLERK_WEBHOOK_SECRET");
 
     return new Response("Webhook secret is not configured", {
       status: 500,
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   const svixSignature = headerPayload.get("svix-signature");
 
   if (!svixId || !svixTimestamp || !svixSignature) {
-    console.error("❌ Missing Svix headers");
+    console.error("Missing Svix headers");
 
     return new Response("Missing Svix headers", {
       status: 400,
@@ -37,20 +37,33 @@ export async function POST(req: Request) {
   let event: WebhookEvent;
 
   try {
-    event = webhook.verify(payload, {
+    // Verify the raw payload first.
+    webhook.verify(payload, {
       "svix-id": svixId,
       "svix-timestamp": svixTimestamp,
       "svix-signature": svixSignature,
-    }) as unknown as WebhookEvent;
-  } catch (error) {
-    console.error("❌ Clerk webhook verification failed:", error);
+    });
 
-    return new Response("Invalid signature", {
+    // Svix verification succeeds without giving us the parsed event here,
+    // so parse the already-verified raw payload ourselves.
+    event = JSON.parse(payload) as WebhookEvent;
+  } catch (error) {
+    console.error("Clerk webhook verification/parsing failed:", error);
+
+    return new Response("Invalid webhook payload or signature", {
       status: 400,
     });
   }
 
-  console.log(`✅ Clerk event received: ${event.type}`);
+  if (!event || typeof event.type !== "string") {
+    console.error("Invalid Clerk webhook event:", event);
+
+    return new Response("Invalid Clerk webhook event", {
+      status: 400,
+    });
+  }
+
+  console.log(`Clerk event received: ${event.type}`);
 
   try {
     switch (event.type) {
@@ -63,7 +76,7 @@ export async function POST(req: Request) {
           ) ?? email_addresses[0];
 
         if (!primaryEmail?.email_address) {
-          console.error("❌ Clerk user has no email address:", id);
+          console.error("Clerk user has no email address:", id);
 
           return new Response("User email is required", {
             status: 400,
@@ -77,7 +90,7 @@ export async function POST(req: Request) {
           emailVerified: primaryEmail.verification?.status === "verified",
         });
 
-        console.log(`✅ User synced to database: ${id}`);
+        console.log(`User synced to database: ${id}`);
 
         break;
       }
@@ -91,7 +104,7 @@ export async function POST(req: Request) {
           ) ?? email_addresses[0];
 
         if (!primaryEmail?.email_address) {
-          console.error("❌ Updated Clerk user has no email address:", id);
+          console.error("Updated Clerk user has no email address:", id);
 
           return new Response("User email is required", {
             status: 400,
@@ -105,9 +118,7 @@ export async function POST(req: Request) {
         });
 
         if (!existingUser) {
-          console.warn(
-            `⚠️ User does not exist in database. Creating user: ${id}`,
-          );
+          console.warn(`User does not exist in database. Creating user: ${id}`);
 
           await createUser({
             clerkId: id,
@@ -116,7 +127,7 @@ export async function POST(req: Request) {
             emailVerified: primaryEmail.verification?.status === "verified",
           });
 
-          console.log(`✅ Missing user created from update event: ${id}`);
+          console.log(`Missing user created from update event: ${id}`);
 
           break;
         }
@@ -133,7 +144,7 @@ export async function POST(req: Request) {
           },
         });
 
-        console.log(`✅ User updated in database: ${id}`);
+        console.log(`User updated in database: ${id}`);
 
         break;
       }
@@ -148,7 +159,7 @@ export async function POST(req: Request) {
         });
 
         if (!existingUser) {
-          console.warn(`⚠️ Deleted Clerk user not found in database: ${id}`);
+          console.warn(`Deleted Clerk user not found in database: ${id}`);
 
           break;
         }
@@ -163,16 +174,16 @@ export async function POST(req: Request) {
           },
         });
 
-        console.log(`✅ User soft-deleted in database: ${id}`);
+        console.log(`User soft-deleted in database: ${id}`);
 
         break;
       }
 
       default:
-        console.log(`ℹ️ Ignoring Clerk event: ${event.type}`);
+        console.log(`Ignoring Clerk event: ${event.type}`);
     }
   } catch (error) {
-    console.error(`❌ Failed to process Clerk event: ${event.type}`, error);
+    console.error(`Failed to process Clerk event: ${event.type}`, error);
 
     return new Response("Webhook processing failed", {
       status: 500,
