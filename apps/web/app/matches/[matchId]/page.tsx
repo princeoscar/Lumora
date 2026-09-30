@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { MessageComposer } from "@/components/messages/message-composer";
 import { MainNav } from "@/components/navigation/main-nav";
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
 import { getMatchMessages } from "@/lib/db/messages";
@@ -133,6 +134,7 @@ export default async function MatchConversationPage({
               })
             )}
           </section>
+          <MessageComposer matchId={matchId} />
         </div>
       </main>
     </>
