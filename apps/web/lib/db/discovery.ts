@@ -80,7 +80,7 @@ export async function getDiscoveryCandidates(
         not: userId,
       },
       accountStatus: "ACTIVE",
-      sentDiscoveryActions: {
+      receivedDiscoveryActions: {
         none: {
           userId,
         },
