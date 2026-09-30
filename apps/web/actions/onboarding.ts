@@ -51,6 +51,7 @@ export async function completeOnboarding(input: unknown) {
         },
         data: {
           onboardingCompleted: true,
+          accountStatus: "ACTIVE",
         },
       }),
     ]);
