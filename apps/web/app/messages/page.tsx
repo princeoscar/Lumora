@@ -2,15 +2,18 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { MainNav } from "@/components/navigation/main-nav";
+import { RealtimeMessageInboxListener } from "@/components/messages/realtime-message-inbox-listener";
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
 import { getMessageThreads } from "@/lib/db/messages";
 
 export default async function MessagesPage() {
   const user = await requireCurrentUserWithProfile();
   const threads = await getMessageThreads(user.id);
+  const matchIds = threads.map((thread) => thread.matchId);
 
   return (
     <>
+      <RealtimeMessageInboxListener matchIds={matchIds} />
       <MainNav />
 
       <main className="min-h-screen bg-muted/20 px-4 py-6 sm:px-6 md:px-10">
