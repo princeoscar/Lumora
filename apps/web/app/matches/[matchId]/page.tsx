@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { MessageComposer } from "@/components/messages/message-composer";
 import { MarkMessagesRead } from "@/components/messages/mark-messages-read";
+import { RealtimeMessageListener } from "@/components/messages/realtime-message-listener";
 import { MainNav } from "@/components/navigation/main-nav";
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
 import { getMatchMessages } from "@/lib/db/messages";
@@ -41,6 +42,7 @@ export default async function MatchConversationPage({
 
       <main className="min-h-screen bg-muted/20">
         <MarkMessagesRead matchId={matchId} />
+        <RealtimeMessageListener matchId={matchId} />
         <div className="mx-auto flex min-h-[calc(100vh-73px)] max-w-4xl flex-col">
           <header className="border-b bg-background px-4 py-4 sm:px-6">
             <div className="flex items-center gap-3">
