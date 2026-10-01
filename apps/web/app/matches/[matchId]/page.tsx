@@ -7,6 +7,7 @@ import { MatchOnlineStatus } from "@/components/messages/match-online-status";
 import { MessageComposer } from "@/components/messages/message-composer";
 import { MarkMessagesRead } from "@/components/messages/mark-messages-read";
 import { TypingIndicator } from "@/components/messages/typing-indicator";
+import { MatchLastSeen } from "@/components/messages/match-last-seen";
 import { MainNav } from "@/components/navigation/main-nav";
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
 import { getMatchMessages } from "@/lib/db/messages";
@@ -77,6 +78,12 @@ export default async function MatchConversationPage({
                   </h1>
 
                   <MatchOnlineStatus />
+
+                  <MatchLastSeen
+                    lastActiveAt={
+                      match.user.lastActiveAt?.toISOString() ?? null
+                    }
+                  />
 
                   <p className="text-sm text-muted-foreground">
                     You matched on{" "}
