@@ -13,15 +13,28 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 
-import { getMatchChannelName } from "@/lib/pusher/channels";
+import {
+  getMatchChannelName,
+  getMatchPresenceChannelName,
+} from "@/lib/pusher/channels";
 
 type TypingPayload = {
   userId: string;
   isTyping: boolean;
 };
 
+type PresenceMember = {
+  id: string;
+};
+
+type PresenceMembers = {
+  count: number;
+  each: (callback: (member: PresenceMember) => void) => void;
+};
+
 type MatchRealtimeContextValue = {
   isOtherUserTyping: boolean;
+  isOtherUserOnline: boolean;
   setTyping: (isTyping: boolean) => void;
 };
 
@@ -44,6 +57,7 @@ export function MatchRealtimeProvider({
   const channelRef = useRef<ReturnType<Pusher["subscribe"]> | null>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isOtherUserTyping, setIsOtherUserTyping] = useState(false);
+  const [isOtherUserOnline, setIsOtherUserOnline] = useState(false);
 
   useEffect(() => {
     const key = process.env.NEXT_PUBLIC_PUSHER_KEY;
@@ -62,8 +76,11 @@ export function MatchRealtimeProvider({
       },
     });
 
-    const channelName = getMatchChannelName(matchId);
-    const channel = pusher.subscribe(channelName);
+    const privateChannelName = getMatchChannelName(matchId);
+    const presenceChannelName = getMatchPresenceChannelName(matchId);
+
+    const channel = pusher.subscribe(privateChannelName);
+    const presenceChannel = pusher.subscribe(presenceChannelName);
 
     channelRef.current = channel;
 
@@ -93,12 +110,53 @@ export function MatchRealtimeProvider({
       }
     };
 
+    const handlePresenceSubscription = (members: PresenceMembers) => {
+      let otherUserOnline = false;
+
+      members.each((member) => {
+        if (member.id !== currentUserId) {
+          otherUserOnline = true;
+        }
+      });
+
+      setIsOtherUserOnline(otherUserOnline);
+    };
+
+    const handleMemberAdded = (member: PresenceMember) => {
+      if (member.id !== currentUserId) {
+        setIsOtherUserOnline(true);
+      }
+    };
+
+    const handleMemberRemoved = (member: PresenceMember) => {
+      if (member.id !== currentUserId) {
+        setIsOtherUserOnline(false);
+      }
+    };
+
     channel.bind("message.created", handleMessageCreated);
     channel.bind("message.read", handleMessageRead);
     channel.bind("client-typing", handleTyping);
 
+    presenceChannel.bind(
+      "pusher:subscription_succeeded",
+      handlePresenceSubscription,
+    );
+    presenceChannel.bind("pusher:member_added", handleMemberAdded);
+    presenceChannel.bind("pusher:member_removed", handleMemberRemoved);
+
     channel.bind("pusher:subscription_error", (error: unknown) => {
-      console.error(`❌ Pusher subscription error for ${channelName}:`, error);
+      console.error(
+        `❌ Pusher subscription error for ${privateChannelName}:`,
+        error,
+      );
+    });
+
+    presenceChannel.bind("pusher:subscription_error", (error: unknown) => {
+      console.error(
+        `❌ Pusher presence subscription error for ${presenceChannelName}:`,
+        error,
+      );
     });
 
     return () => {
@@ -106,12 +164,23 @@ export function MatchRealtimeProvider({
       channel.unbind("message.read", handleMessageRead);
       channel.unbind("client-typing", handleTyping);
 
+      presenceChannel.unbind(
+        "pusher:subscription_succeeded",
+        handlePresenceSubscription,
+      );
+      presenceChannel.unbind("pusher:member_added", handleMemberAdded);
+      presenceChannel.unbind("pusher:member_removed", handleMemberRemoved);
+
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
 
+      setIsOtherUserTyping(false);
+      setIsOtherUserOnline(false);
+
       channelRef.current = null;
-      pusher.unsubscribe(channelName);
+      pusher.unsubscribe(privateChannelName);
+      pusher.unsubscribe(presenceChannelName);
       pusher.disconnect();
     };
   }, [currentUserId, matchId, router]);
@@ -135,9 +204,10 @@ export function MatchRealtimeProvider({
   const value = useMemo(
     () => ({
       isOtherUserTyping,
+      isOtherUserOnline,
       setTyping,
     }),
-    [isOtherUserTyping, setTyping],
+    [isOtherUserOnline, isOtherUserTyping, setTyping],
   );
 
   return (
