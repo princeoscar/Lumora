@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { MatchRealtimeProvider } from "@/components/messages/match-realtime-provider";
 import { MatchOnlineStatus } from "@/components/messages/match-online-status";
 import { MessageComposer } from "@/components/messages/message-composer";
+import { MessageActions } from "@/components/messages/message-actions";
 import { MarkMessagesRead } from "@/components/messages/mark-messages-read";
 import { TypingIndicator } from "@/components/messages/typing-indicator";
 import { MatchLastSeen } from "@/components/messages/match-last-seen";
@@ -155,6 +156,13 @@ export default async function MatchConversationPage({
                             </span>
                           )}
                         </div>
+
+                        {isMine && (
+                          <MessageActions
+                            messageId={message.id}
+                            content={message.content}
+                          />
+                        )}
                       </div>
                     </div>
                   );
