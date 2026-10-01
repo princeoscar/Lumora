@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { MatchRealtimeProvider } from "@/components/messages/match-realtime-provider";
+import { MatchOnlineStatus } from "@/components/messages/match-online-status";
 import { MessageComposer } from "@/components/messages/message-composer";
 import { MarkMessagesRead } from "@/components/messages/mark-messages-read";
 import { TypingIndicator } from "@/components/messages/typing-indicator";
@@ -74,6 +75,8 @@ export default async function MatchConversationPage({
                   <h1 className="truncate text-lg font-semibold">
                     {match.user.displayName}, {match.user.age}
                   </h1>
+
+                  <MatchOnlineStatus />
 
                   <p className="text-sm text-muted-foreground">
                     You matched on{" "}
