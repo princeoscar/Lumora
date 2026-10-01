@@ -24,6 +24,7 @@ function getDisplayName(firstName: string, lastName: string | null) {
 
 function buildMatchProfile(user: {
   id: string;
+  lastActiveAt: Date | null;
   profile: {
     id: string;
     displayName: string | null;
@@ -58,6 +59,7 @@ function buildMatchProfile(user: {
     bio: user.profile.bio,
     occupation: user.profile.occupation,
     company: user.profile.company,
+    lastActiveAt: user.lastActiveAt,
     photos: user.media,
   };
 }
@@ -76,6 +78,7 @@ export async function getUserMatches(userId: string): Promise<MatchItem[]> {
       user: {
         select: {
           id: true,
+          lastActiveAt: true,
           profile: {
             select: {
               id: true,
@@ -111,6 +114,7 @@ export async function getUserMatches(userId: string): Promise<MatchItem[]> {
       matchedUser: {
         select: {
           id: true,
+          lastActiveAt: true,
           profile: {
             select: {
               id: true,

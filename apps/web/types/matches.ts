@@ -9,6 +9,7 @@ export type MatchProfile = {
   bio: string | null;
   occupation: string | null;
   company: string | null;
+  lastActiveAt: Date | null;
   photos: {
     id: string;
     url: string;
