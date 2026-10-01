@@ -39,7 +39,13 @@ export function RealtimeMessageListener({
       router.refresh();
     };
 
+    const handleMessageRead = () => {
+      router.refresh();
+    };
+
     channel.bind("message.created", handleMessageCreated);
+
+    channel.bind("message.read", handleMessageRead);
 
     channel.bind("pusher:subscription_error", (error: unknown) => {
       console.error("❌ Pusher subscription error:", error);
@@ -47,6 +53,7 @@ export function RealtimeMessageListener({
 
     return () => {
       channel.unbind("message.created", handleMessageCreated);
+      channel.unbind("message.read", handleMessageRead);
       pusher.unsubscribe(channelName);
       pusher.disconnect();
     };

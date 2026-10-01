@@ -120,18 +120,30 @@ export default async function MatchConversationPage({
                     >
                       <p>{message.content}</p>
 
-                      <p
-                        className={`mt-1 text-[11px] ${
+                      <div
+                        className={`mt-1 flex items-center gap-1 text-[11px] ${
                           isMine
-                            ? "text-primary-foreground/70"
+                            ? "justify-end text-primary-foreground/70"
                             : "text-muted-foreground"
                         }`}
                       >
-                        {message.createdAt.toLocaleTimeString(undefined, {
-                          hour: "numeric",
-                          minute: "2-digit",
-                        })}
-                      </p>
+                        <span>
+                          {message.createdAt.toLocaleTimeString(undefined, {
+                            hour: "numeric",
+                            minute: "2-digit",
+                          })}
+                        </span>
+
+                        {isMine && (
+                          <span
+                            aria-label={message.readAt ? "Read" : "Sent"}
+                            title={message.readAt ? "Read" : "Sent"}
+                            className="font-medium"
+                          >
+                            {message.readAt ? "✓✓" : "✓"}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
