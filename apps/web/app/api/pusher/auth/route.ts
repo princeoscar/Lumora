@@ -1,9 +1,12 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-import { prisma } from "@/lib/prisma";
-import { getMatchChannelName } from "@/lib/pusher/channels";
+import {
+  getMatchChannelName,
+  getMatchPresenceChannelName,
+} from "@/lib/pusher/channels";
 import { pusherServer } from "@/lib/pusher/server";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   try {
@@ -29,13 +32,19 @@ export async function POST(request: Request) {
       });
     }
 
-    const channelPrefix = "private-match-";
+    const privatePrefix = "private-match-";
+    const presencePrefix = "presence-match-";
 
-    if (!channelName.startsWith(channelPrefix)) {
+    const isPrivateMatchChannel = channelName.startsWith(privatePrefix);
+    const isPresenceMatchChannel = channelName.startsWith(presencePrefix);
+
+    if (!isPrivateMatchChannel && !isPresenceMatchChannel) {
       return new NextResponse("Forbidden", { status: 403 });
     }
 
-    const matchId = channelName.slice(channelPrefix.length);
+    const matchId = isPrivateMatchChannel
+      ? channelName.slice(privatePrefix.length)
+      : channelName.slice(presencePrefix.length);
 
     if (!matchId) {
       return new NextResponse("Forbidden", { status: 403 });
@@ -47,6 +56,13 @@ export async function POST(request: Request) {
       },
       select: {
         id: true,
+        profile: {
+          select: {
+            displayName: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
       },
     });
 
@@ -64,11 +80,43 @@ export async function POST(request: Request) {
       },
     });
 
-    if (!match || getMatchChannelName(match.id) !== channelName) {
+    if (!match) {
       return new NextResponse("Forbidden", { status: 403 });
     }
 
-    const authResponse = pusherServer.authorizeChannel(socketId, channelName);
+    if (isPrivateMatchChannel) {
+      if (getMatchChannelName(match.id) !== channelName) {
+        return new NextResponse("Forbidden", { status: 403 });
+      }
+
+      const authResponse = pusherServer.authorizeChannel(socketId, channelName);
+
+      return NextResponse.json(authResponse);
+    }
+
+    if (getMatchPresenceChannelName(match.id) !== channelName) {
+      return new NextResponse("Forbidden", { status: 403 });
+    }
+
+    const displayName =
+      user.profile?.displayName?.trim() ||
+      `${user.profile?.firstName ?? ""} ${
+        user.profile?.lastName ?? ""
+      }`.trim() ||
+      "Lumora member";
+
+    const channelData = {
+      user_id: user.id,
+      user_info: {
+        name: displayName,
+      },
+    };
+
+    const authResponse = pusherServer.authorizeChannel(
+      socketId,
+      channelName,
+      channelData,
+    );
 
     return NextResponse.json(authResponse);
   } catch (error) {
