@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useState, useTransition } from "react";
+import { FormEvent, useEffect, useRef, useState, useTransition } from "react";
 
 import { sendMessage } from "@/actions/message-actions";
+import { useMatchRealtime } from "@/components/messages/match-realtime-provider";
 import { Button } from "@/components/ui/button";
 
 type MessageComposerProps = {
@@ -12,9 +13,49 @@ type MessageComposerProps = {
 
 export function MessageComposer({ matchId }: MessageComposerProps) {
   const router = useRouter();
+  const { setTyping } = useMatchRealtime();
+
   const [content, setContent] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      setTyping(false);
+    };
+  }, [setTyping]);
+
+  function handleContentChange(value: string) {
+    setContent(value);
+
+    const trimmedValue = value.trim();
+
+    if (!trimmedValue) {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      setTyping(false);
+      return;
+    }
+
+    setTyping(true);
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      setTyping(false);
+      typingTimeoutRef.current = null;
+    }, 1200);
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -27,6 +68,12 @@ export function MessageComposer({ matchId }: MessageComposerProps) {
     }
 
     setError(null);
+    setTyping(false);
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
 
     startTransition(async () => {
       const result = await sendMessage({
@@ -58,7 +105,7 @@ export function MessageComposer({ matchId }: MessageComposerProps) {
       <form onSubmit={handleSubmit} className="flex items-end gap-2">
         <textarea
           value={content}
-          onChange={(event) => setContent(event.target.value)}
+          onChange={(event) => handleContentChange(event.target.value)}
           placeholder="Write a message..."
           maxLength={2000}
           rows={1}
