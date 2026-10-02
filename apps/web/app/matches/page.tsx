@@ -135,9 +135,19 @@ export default async function MatchesPage() {
                         })}
                       </p>
 
-                      <Button asChild className="w-full">
-                        <Link href={`/matches/${match.matchId}`}>Message</Link>
-                      </Button>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <Button asChild variant="outline">
+                          <Link href={`/profile/view/${match.user.userId}`}>
+                            View profile
+                          </Link>
+                        </Button>
+
+                        <Button asChild>
+                          <Link href={`/matches/${match.matchId}`}>
+                            Message
+                          </Link>
+                        </Button>
+                      </div>
                     </div>
                   </article>
                 );
