@@ -134,6 +134,10 @@ export default async function MatchesPage() {
                           day: "numeric",
                         })}
                       </p>
+
+                      <Button asChild className="w-full">
+                        <Link href={`/matches/${match.matchId}`}>Message</Link>
+                      </Button>
                     </div>
                   </article>
                 );
