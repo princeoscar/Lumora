@@ -153,9 +153,7 @@ export default async function PublicProfilePage({
                             Company
                           </p>
 
-                          <p className="mt-1 font-medium">
-                            {profile.company}
-                          </p>
+                          <p className="mt-1 font-medium">{profile.company}</p>
                         </div>
                       )}
                     </div>
@@ -167,9 +165,7 @@ export default async function PublicProfilePage({
                         Height
                       </p>
 
-                      <p className="mt-1 font-medium">
-                        {profile.height} cm
-                      </p>
+                      <p className="mt-1 font-medium">{profile.height} cm</p>
                     </div>
                   )}
                 </CardContent>

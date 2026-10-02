@@ -113,15 +113,8 @@ export function DiscoveryCandidateCard({
           </div>
         )}
 
-        <Button
-          asChild
-          type="button"
-          variant="outline"
-          className="w-full"
-        >
-          <Link href={`/profile/view/${candidate.userId}`}>
-            View profile
-          </Link>
+        <Button asChild type="button" variant="outline" className="w-full">
+          <Link href={`/profile/view/${candidate.userId}`}>View profile</Link>
         </Button>
 
         <div className="grid grid-cols-2 gap-3">
