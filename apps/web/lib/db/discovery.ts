@@ -228,3 +228,46 @@ export async function isDiscoverableTarget(
 
   return target !== null;
 }
+
+export async function getPendingLikeCount(userId: string) {
+  const [incomingLikes, matches] = await Promise.all([
+    prisma.discoveryAction.findMany({
+      where: {
+        targetUserId: userId,
+        userId: {
+          not: userId,
+        },
+        action: "LIKE",
+      },
+      select: {
+        userId: true,
+      },
+    }),
+
+    prisma.match.findMany({
+      where: {
+        OR: [{ userId }, { matchedUserId: userId }],
+      },
+      select: {
+        userId: true,
+        matchedUserId: true,
+      },
+    }),
+  ]);
+
+  const matchedUserIds = new Set<string>();
+
+  for (const match of matches) {
+    matchedUserIds.add(
+      match.userId === userId ? match.matchedUserId : match.userId,
+    );
+  }
+
+  const pendingLikeUserIds = new Set(
+    incomingLikes
+      .map((like) => like.userId)
+      .filter((likeUserId) => !matchedUserIds.has(likeUserId)),
+  );
+
+  return pendingLikeUserIds.size;
+}
