@@ -85,6 +85,11 @@ export async function getDiscoveryCandidates(
           userId,
         },
       },
+      sentDiscoveryActions: {
+        none: {
+          targetUserId: userId,
+        },
+      },
       deletedAt: null,
       onboardingCompleted: true,
       profile: {
