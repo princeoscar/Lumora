@@ -11,6 +11,7 @@ import { TypingIndicator } from "@/components/messages/typing-indicator";
 import { MatchLastSeen } from "@/components/messages/match-last-seen";
 import { MainNav } from "@/components/navigation/main-nav";
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
+import { UnmatchButton } from "@/components/messages/unmatch-button";
 import { getMatchMessages } from "@/lib/db/messages";
 import { getUserMatches } from "@/lib/db/matches";
 
@@ -94,6 +95,13 @@ export default async function MatchConversationPage({
                       day: "numeric",
                     })}
                   </p>
+                </div>
+
+                <div className="ml-auto shrink-0">
+                  <UnmatchButton
+                    matchId={matchId}
+                    matchedUserName={match.user.displayName}
+                  />
                 </div>
               </div>
             </header>
