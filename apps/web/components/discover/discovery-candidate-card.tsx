@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -111,6 +112,17 @@ export function DiscoveryCandidateCard({
             {error}
           </div>
         )}
+
+        <Button
+          asChild
+          type="button"
+          variant="outline"
+          className="w-full"
+        >
+          <Link href={`/profile/view/${candidate.userId}`}>
+            View profile
+          </Link>
+        </Button>
 
         <div className="grid grid-cols-2 gap-3">
           <Button
