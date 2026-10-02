@@ -33,7 +33,6 @@ export async function getMatchMessages(
   return prisma.message.findMany({
     where: {
       matchId: match.id,
-      deletedAt: null,
     },
     select: {
       id: true,

@@ -115,6 +115,7 @@ export default async function MatchConversationPage({
               ) : (
                 messages.map((message) => {
                   const isMine = message.senderId === user.id;
+                  const isDeleted = message.deletedAt !== null;
 
                   return (
                     <div
@@ -130,7 +131,21 @@ export default async function MatchConversationPage({
                             : "rounded-bl-md border bg-background"
                         }`}
                       >
-                        <p>{message.content}</p>
+                        <p
+                          className={
+                            isDeleted ? "italic opacity-70" : undefined
+                          }
+                        >
+                          {isDeleted
+                            ? "This message was deleted"
+                            : message.content}
+                        </p>
+
+                        {!isDeleted && message.editedAt && (
+                          <span className="text-[11px] italic opacity-70">
+                            Edited
+                          </span>
+                        )}
 
                         <div
                           className={`mt-1 flex items-center gap-1 text-[11px] ${
@@ -146,7 +161,7 @@ export default async function MatchConversationPage({
                             })}
                           </span>
 
-                          {isMine && (
+                          {isMine && !isDeleted && (
                             <span
                               aria-label={message.readAt ? "Read" : "Sent"}
                               title={message.readAt ? "Read" : "Sent"}
@@ -157,7 +172,7 @@ export default async function MatchConversationPage({
                           )}
                         </div>
 
-                        {isMine && (
+                        {isMine && !isDeleted && (
                           <MessageActions
                             messageId={message.id}
                             content={message.content}
