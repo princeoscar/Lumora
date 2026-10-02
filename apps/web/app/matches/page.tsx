@@ -137,7 +137,9 @@ export default async function MatchesPage() {
 
                       <div className="grid gap-2 sm:grid-cols-2">
                         <Button asChild variant="outline">
-                          <Link href={`/profile/view/${match.user.userId}`}>
+                          <Link
+                            href={`/profile/view/${match.user.userId}?from=matches`}
+                          >
                             View profile
                           </Link>
                         </Button>

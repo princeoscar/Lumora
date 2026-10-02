@@ -10,6 +10,7 @@ import { getPublicProfileByUserId } from "@/lib/db/public-profile";
 
 type PublicProfilePageProps = {
   params: Promise<{ userId: string }>;
+  searchParams?: Promise<{ from?: string }>;
 };
 
 function calculateAge(dateOfBirth: Date) {
@@ -31,10 +32,12 @@ function calculateAge(dateOfBirth: Date) {
 
 export default async function PublicProfilePage({
   params,
+  searchParams,
 }: PublicProfilePageProps) {
   await requireCurrentUserWithProfile();
 
   const { userId } = await params;
+  const { from } = (await searchParams) ?? {};
 
   const profile = await getPublicProfileByUserId(userId);
 
@@ -43,6 +46,13 @@ export default async function PublicProfilePage({
   }
 
   const age = calculateAge(profile.dateOfBirth);
+
+  const backLink =
+    from === "likes"
+      ? { href: "/likes", label: "Back to Likes" }
+      : from === "matches"
+        ? { href: "/matches", label: "Back to Matches" }
+        : { href: "/discover", label: "Back to Discover" };
 
   return (
     <>
@@ -62,7 +72,7 @@ export default async function PublicProfilePage({
             </div>
 
             <Button asChild variant="outline">
-              <Link href="/discover">Back to Discover</Link>
+              <Link href={backLink.href}>{backLink.label}</Link>
             </Button>
           </div>
 

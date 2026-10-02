@@ -116,7 +116,9 @@ export function LikesCandidateCard({ candidate }: LikesCandidateCardProps) {
         )}
 
         <Button asChild type="button" variant="outline" className="w-full">
-          <Link href={`/profile/view/${candidate.userId}`}>View profile</Link>
+          <Link href={`/profile/view/${candidate.userId}?from=likes`}>
+            View profile
+          </Link>
         </Button>
 
         <div className="grid grid-cols-2 gap-3">
