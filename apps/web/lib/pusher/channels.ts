@@ -5,3 +5,7 @@ export function getMatchChannelName(matchId: string) {
 export function getMatchPresenceChannelName(matchId: string) {
   return `presence-match-${matchId}`;
 }
+
+export function getUserChannelName(userId: string) {
+  return `private-user-${userId}`;
+}

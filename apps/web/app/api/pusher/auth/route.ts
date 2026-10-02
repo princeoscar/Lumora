@@ -32,24 +32,6 @@ export async function POST(request: Request) {
       });
     }
 
-    const privatePrefix = "private-match-";
-    const presencePrefix = "presence-match-";
-
-    const isPrivateMatchChannel = channelName.startsWith(privatePrefix);
-    const isPresenceMatchChannel = channelName.startsWith(presencePrefix);
-
-    if (!isPrivateMatchChannel && !isPresenceMatchChannel) {
-      return new NextResponse("Forbidden", { status: 403 });
-    }
-
-    const matchId = isPrivateMatchChannel
-      ? channelName.slice(privatePrefix.length)
-      : channelName.slice(presencePrefix.length);
-
-    if (!matchId) {
-      return new NextResponse("Forbidden", { status: 403 });
-    }
-
     const user = await prisma.user.findUnique({
       where: {
         clerkId: clerkUserId,
@@ -67,6 +49,42 @@ export async function POST(request: Request) {
     });
 
     if (!user) {
+      return new NextResponse("Forbidden", { status: 403 });
+    }
+
+    const userChannelPrefix = "private-user-";
+
+    if (channelName.startsWith(userChannelPrefix)) {
+      const channelUserId = channelName.slice(userChannelPrefix.length);
+
+      if (!channelUserId || channelUserId !== user.id) {
+        return new NextResponse("Forbidden", { status: 403 });
+      }
+
+      if (`private-user-${user.id}` !== channelName) {
+        return new NextResponse("Forbidden", { status: 403 });
+      }
+
+      const authResponse = pusherServer.authorizeChannel(socketId, channelName);
+
+      return NextResponse.json(authResponse);
+    }
+
+    const privatePrefix = "private-match-";
+    const presencePrefix = "presence-match-";
+
+    const isPrivateMatchChannel = channelName.startsWith(privatePrefix);
+    const isPresenceMatchChannel = channelName.startsWith(presencePrefix);
+
+    if (!isPrivateMatchChannel && !isPresenceMatchChannel) {
+      return new NextResponse("Forbidden", { status: 403 });
+    }
+
+    const matchId = isPrivateMatchChannel
+      ? channelName.slice(privatePrefix.length)
+      : channelName.slice(presencePrefix.length);
+
+    if (!matchId) {
       return new NextResponse("Forbidden", { status: 403 });
     }
 

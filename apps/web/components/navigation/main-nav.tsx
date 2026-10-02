@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { ActivityTracker } from "@/components/activity/activity-tracker";
 import { getPendingLikeCount } from "@/lib/db/discovery";
+import { RealtimeLikesListener } from "@/components/likes/realtime-likes-listener";
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
 
 export async function MainNav() {
@@ -11,6 +12,7 @@ export async function MainNav() {
   return (
     <>
       <ActivityTracker />
+      <RealtimeLikesListener userId={user.id} />
 
       <nav className="border-b bg-background/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-6 py-4 md:px-10">
@@ -37,10 +39,10 @@ export async function MainNav() {
             </Link>
 
             <Link
-              href="/matches"
+              href="/likes"
               className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
             >
-              <span>Matches</span>
+              <span>Likes</span>
 
               {pendingLikeCount > 0 && (
                 <span
@@ -60,7 +62,14 @@ export async function MainNav() {
             </Link>
 
             <Link
-              href="/messages"
+              href="/matches"
+              className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
+            >
+              <span>Matches</span>
+            </Link>
+
+            <Link
+              href="apps/web/components/likes/realtime-likes-listener.tsx `/messages"
               className="rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
             >
               Messages

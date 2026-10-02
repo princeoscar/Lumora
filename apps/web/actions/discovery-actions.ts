@@ -5,6 +5,8 @@ import { z } from "zod";
 
 import { requireCurrentUser } from "@/lib/auth/require-current-user";
 import { isDiscoverableTarget } from "@/lib/db/discovery";
+import { getUserChannelName } from "@/lib/pusher/channels";
+import { pusherServer } from "@/lib/pusher/server";
 import { prisma } from "@/lib/prisma";
 
 const discoveryActionSchema = z.object({
@@ -91,7 +93,22 @@ export async function saveDiscoveryAction(input: unknown) {
       });
     });
 
+    if (action === "LIKE") {
+      try {
+        await pusherServer.trigger(
+          getUserChannelName(targetUserId),
+          "like.received",
+          {
+            userId: user.id,
+          },
+        );
+      } catch (error) {
+        console.error("❌ Failed to publish like event:", error);
+      }
+    }
+
     revalidatePath("/discover");
+    revalidatePath("/likes");
 
     return {
       success: true,
