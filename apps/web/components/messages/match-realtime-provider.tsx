@@ -96,6 +96,10 @@ export function MatchRealtimeProvider({
       router.refresh();
     };
 
+    const handleMatchRemoved = () => {
+      router.push("/matches");
+    };
+
     const handleMessageRead = () => {
       router.refresh();
     };
@@ -145,6 +149,7 @@ export function MatchRealtimeProvider({
     channel.bind("message.created", handleMessageCreated);
     channel.bind("message.updated", handleMessageUpdated);
     channel.bind("message.deleted", handleMessageDeleted);
+    channel.bind("match.removed", handleMatchRemoved);
     channel.bind("message.read", handleMessageRead);
     channel.bind("client-typing", handleTyping);
 
@@ -173,6 +178,7 @@ export function MatchRealtimeProvider({
       channel.unbind("message.created", handleMessageCreated);
       channel.unbind("message.updated", handleMessageUpdated);
       channel.unbind("message.deleted", handleMessageDeleted);
+      channel.unbind("match.removed", handleMatchRemoved);
       channel.unbind("message.read", handleMessageRead);
       channel.unbind("client-typing", handleTyping);
 
