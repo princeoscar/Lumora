@@ -276,3 +276,139 @@ export async function getPendingLikeCount(userId: string) {
 
   return pendingLikeUserIds.size;
 }
+
+export async function getPendingLikes(
+  userId: string,
+): Promise<DiscoveryCandidate[]> {
+  const incomingLikes = await prisma.discoveryAction.findMany({
+    where: {
+      targetUserId: userId,
+      userId: {
+        not: userId,
+      },
+      action: "LIKE",
+    },
+    select: {
+      userId: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  if (incomingLikes.length === 0) {
+    return [];
+  }
+
+  const matches = await prisma.match.findMany({
+    where: {
+      OR: [{ userId }, { matchedUserId: userId }],
+    },
+    select: {
+      userId: true,
+      matchedUserId: true,
+    },
+  });
+
+  const matchedUserIds = new Set<string>();
+
+  for (const match of matches) {
+    matchedUserIds.add(
+      match.userId === userId ? match.matchedUserId : match.userId,
+    );
+  }
+
+  const pendingUserIds = incomingLikes
+    .map((like) => like.userId)
+    .filter((likedUserId) => !matchedUserIds.has(likedUserId));
+
+  if (pendingUserIds.length === 0) {
+    return [];
+  }
+
+  const users = await prisma.user.findMany({
+    where: {
+      id: {
+        in: pendingUserIds,
+      },
+      accountStatus: "ACTIVE",
+      deletedAt: null,
+      onboardingCompleted: true,
+      profile: {
+        is: {
+          deletedAt: null,
+          profileVisibility: "PUBLIC",
+        },
+      },
+      media: {
+        some: {
+          deletedAt: null,
+          mediaType: "IMAGE",
+        },
+      },
+    },
+    select: {
+      id: true,
+      profile: {
+        select: {
+          id: true,
+          displayName: true,
+          firstName: true,
+          lastName: true,
+          dateOfBirth: true,
+          gender: true,
+          bio: true,
+          occupation: true,
+          company: true,
+          height: true,
+        },
+      },
+      media: {
+        where: {
+          deletedAt: null,
+          mediaType: "IMAGE",
+        },
+        orderBy: {
+          displayOrder: "asc",
+        },
+        select: {
+          id: true,
+          url: true,
+          isProfilePhoto: true,
+          displayOrder: true,
+        },
+      },
+    },
+  });
+
+  const usersById = new Map(users.map((user) => [user.id, user]));
+
+  const pendingLikes: DiscoveryCandidate[] = [];
+
+  for (const pendingUserId of pendingUserIds) {
+    const user = usersById.get(pendingUserId);
+
+    if (!user?.profile) {
+      continue;
+    }
+
+    const profile = user.profile;
+
+    pendingLikes.push({
+      userId: user.id,
+      profileId: profile.id,
+      displayName:
+        profile.displayName?.trim() ||
+        getDisplayName(profile.firstName, profile.lastName),
+      age: calculateAge(profile.dateOfBirth),
+      gender: profile.gender,
+      bio: profile.bio,
+      occupation: profile.occupation,
+      company: profile.company,
+      height: profile.height,
+      photos: user.media,
+    });
+  }
+
+  return pendingLikes;
+}
