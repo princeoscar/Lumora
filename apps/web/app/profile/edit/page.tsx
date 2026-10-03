@@ -4,6 +4,11 @@ import { ProfileForm } from "@/components/forms/profile-form";
 import { ProfileMediaManager } from "@/components/forms/profile-media-manager";
 import { ProfileMediaUpload } from "@/components/forms/profile-media-upload";
 import { Button } from "@/components/ui/button";
+import { ProfileInterestsForm } from "@/components/forms/profile-interests-form";
+import {
+  getAllInterests,
+  getUserInterestIds,
+} from "@/lib/db/interests";
 import {
   Card,
   CardContent,
@@ -18,6 +23,10 @@ import { MAX_PROFILE_PHOTOS } from "@/lib/profile/constants";
 export default async function ProfileEditPage() {
   const user = await requireCurrentUserWithProfile();
   const profile = await getProfileWithMediaByUserId(user.id);
+  const [interests, selectedInterestIds] = await Promise.all([
+    getAllInterests(),
+    getUserInterestIds(user.id),
+  ]);
 
   if (!profile) {
     return null;
@@ -53,6 +62,23 @@ export default async function ProfileEditPage() {
 
           <CardContent>
             <ProfileForm profile={profile} />
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Interests</CardTitle>
+
+            <CardDescription>
+              Choose interests that help people get to know you better.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <ProfileInterestsForm
+              interests={interests}
+              selectedInterestIds={selectedInterestIds}
+            />
           </CardContent>
         </Card>
 
