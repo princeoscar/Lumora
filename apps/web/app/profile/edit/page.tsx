@@ -4,6 +4,8 @@ import { ProfileForm } from "@/components/forms/profile-form";
 import { ProfileMediaManager } from "@/components/forms/profile-media-manager";
 import { ProfileMediaUpload } from "@/components/forms/profile-media-upload";
 import { Button } from "@/components/ui/button";
+import { ProfilePromptsForm } from "@/components/forms/profile-prompts-form";
+import { getUserPrompts } from "@/lib/db/profile-prompts";
 import { ProfileInterestsForm } from "@/components/forms/profile-interests-form";
 import { getAllInterests, getUserInterestIds } from "@/lib/db/interests";
 import {
@@ -20,9 +22,10 @@ import { MAX_PROFILE_PHOTOS } from "@/lib/profile/constants";
 export default async function ProfileEditPage() {
   const user = await requireCurrentUserWithProfile();
   const profile = await getProfileWithMediaByUserId(user.id);
-  const [interests, selectedInterestIds] = await Promise.all([
+  const [interests, selectedInterestIds, prompts] = await Promise.all([
     getAllInterests(),
     getUserInterestIds(user.id),
+    getUserPrompts(user.id),
   ]);
 
   if (!profile) {
@@ -76,6 +79,21 @@ export default async function ProfileEditPage() {
               interests={interests}
               selectedInterestIds={selectedInterestIds}
             />
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Profile prompts</CardTitle>
+
+            <CardDescription>
+              Answer a few prompts to help people discover more about your
+              personality.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <ProfilePromptsForm initialPrompts={prompts} />
           </CardContent>
         </Card>
 
