@@ -5,10 +5,7 @@ import { ProfileMediaManager } from "@/components/forms/profile-media-manager";
 import { ProfileMediaUpload } from "@/components/forms/profile-media-upload";
 import { Button } from "@/components/ui/button";
 import { ProfileInterestsForm } from "@/components/forms/profile-interests-form";
-import {
-  getAllInterests,
-  getUserInterestIds,
-} from "@/lib/db/interests";
+import { getAllInterests, getUserInterestIds } from "@/lib/db/interests";
 import {
   Card,
   CardContent,

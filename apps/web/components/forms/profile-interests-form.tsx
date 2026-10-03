@@ -24,9 +24,7 @@ export function ProfileInterestsForm({
   selectedInterestIds,
 }: ProfileInterestsFormProps) {
   const router = useRouter();
-  const [selectedIds, setSelectedIds] = useState<string[]>(
-    selectedInterestIds,
-  );
+  const [selectedIds, setSelectedIds] = useState<string[]>(selectedInterestIds);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -60,7 +58,8 @@ export function ProfileInterestsForm({
 
       if (!result.success) {
         setError(
-          result.error ?? "We couldn't update your interests. Please try again.",
+          result.error ??
+            "We couldn't update your interests. Please try again.",
         );
         return;
       }
@@ -124,11 +123,7 @@ export function ProfileInterestsForm({
       )}
 
       <div className="flex justify-end">
-        <Button
-          type="button"
-          onClick={handleSave}
-          disabled={isPending}
-        >
+        <Button type="button" onClick={handleSave} disabled={isPending}>
           {isPending ? "Saving..." : "Save interests"}
         </Button>
       </div>
