@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ActivityTracker } from "@/components/activity/activity-tracker";
 import { getPendingLikeCount } from "@/lib/db/discovery";
 import { RealtimeLikesListener } from "@/components/likes/realtime-likes-listener";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
 
 export async function MainNav() {
@@ -69,7 +70,7 @@ export async function MainNav() {
             </Link>
 
             <Link
-              href="apps/web/components/likes/realtime-likes-listener.tsx `/messages"
+              href="/messages"
               className="rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
             >
               Messages
@@ -81,6 +82,7 @@ export async function MainNav() {
             >
               Profile
             </Link>
+            <ThemeToggle />
           </div>
         </div>
       </nav>
