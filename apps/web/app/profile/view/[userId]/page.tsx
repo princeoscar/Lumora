@@ -179,6 +179,25 @@ export default async function PublicProfilePage({
                       <p className="mt-1 font-medium">{profile.height} cm</p>
                     </div>
                   )}
+
+                  {profile.interests.length > 0 && (
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        Interests
+                      </p>
+
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {profile.interests.map((interest) => (
+                          <span
+                            key={interest.id}
+                            className="rounded-full border bg-muted/40 px-3 py-1.5 text-sm font-medium"
+                          >
+                            {interest.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
               {from !== "matches" && (

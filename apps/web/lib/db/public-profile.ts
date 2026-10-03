@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
+import type { PublicProfile } from "@/types/public-profile";
 
-export async function getPublicProfileByUserId(userId: string) {
+export async function getPublicProfileByUserId(
+  userId: string,
+): Promise<PublicProfile | null> {
   const user = await prisma.user.findFirst({
     where: {
       id: userId,
@@ -45,6 +48,20 @@ export async function getPublicProfileByUserId(userId: string) {
           displayOrder: true,
         },
       },
+      interests: {
+        orderBy: {
+          createdAt: "asc",
+        },
+        select: {
+          interest: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -69,5 +86,6 @@ export async function getPublicProfileByUserId(userId: string) {
     company: profile.company,
     height: profile.height,
     media: user.media,
+    interests: user.interests.map(({ interest }) => interest),
   };
 }
