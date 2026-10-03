@@ -62,6 +62,17 @@ export async function getPublicProfileByUserId(
           },
         },
       },
+      prompts: {
+        orderBy: {
+          displayOrder: "asc",
+        },
+        select: {
+          id: true,
+          prompt: true,
+          response: true,
+          displayOrder: true,
+        },
+      },
     },
   });
 
@@ -87,5 +98,6 @@ export async function getPublicProfileByUserId(
     height: profile.height,
     media: user.media,
     interests: user.interests.map(({ interest }) => interest),
+    prompts: user.prompts,
   };
 }

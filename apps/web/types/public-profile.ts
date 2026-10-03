@@ -6,6 +6,13 @@ export type PublicProfileInterest = {
   slug: string;
 };
 
+export type PublicProfilePrompt = {
+  id: string;
+  prompt: string;
+  response: string;
+  displayOrder: number;
+};
+
 export type PublicProfile = {
   userId: string;
   profileId: string;
@@ -25,4 +32,5 @@ export type PublicProfile = {
     displayOrder: number;
   }[];
   interests: PublicProfileInterest[];
+  prompts: PublicProfilePrompt[];
 };

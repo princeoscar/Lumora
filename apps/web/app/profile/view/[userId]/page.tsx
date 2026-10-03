@@ -200,6 +200,33 @@ export default async function PublicProfilePage({
                   )}
                 </CardContent>
               </Card>
+              {profile.prompts.length > 0 && (
+                <Card>
+                  <CardContent className="space-y-6 p-6">
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        Get to know me
+                      </p>
+
+                      <h2 className="mt-1 text-2xl font-semibold tracking-tight">
+                        A little more about me
+                      </h2>
+                    </div>
+
+                    <div className="space-y-5">
+                      {profile.prompts.map((item) => (
+                        <div key={item.id} className="space-y-2">
+                          <p className="text-sm font-semibold">{item.prompt}</p>
+
+                          <p className="leading-7 text-muted-foreground">
+                            {item.response}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
               {from !== "matches" && (
                 <PublicProfileActions
                   targetUserId={profile.userId}
