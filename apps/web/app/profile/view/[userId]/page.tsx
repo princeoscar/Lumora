@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { MainNav } from "@/components/navigation/main-nav";
+import { PublicProfileActions } from "@/components/profile/public-profile-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
@@ -180,6 +181,12 @@ export default async function PublicProfilePage({
                   )}
                 </CardContent>
               </Card>
+              {from !== "matches" && (
+                <PublicProfileActions
+                  targetUserId={profile.userId}
+                  from={from}
+                />
+              )}
             </div>
           </div>
         </div>
