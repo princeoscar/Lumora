@@ -1,4 +1,3 @@
-
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -83,8 +82,8 @@ export default async function Home() {
 
             <p className="mt-6 max-w-xl text-base leading-7 text-white/60 sm:mt-8 sm:text-xl sm:leading-8">
               Lumora is a premium dating experience built around genuine
-              connections, thoughtful discovery, and conversations that
-              actually matter.
+              connections, thoughtful discovery, and conversations that actually
+              matter.
             </p>
 
             <div className="mt-8 flex w-full flex-col gap-3 sm:mt-10 sm:flex-row sm:gap-4">
@@ -193,8 +192,8 @@ export default async function Home() {
 
               <p className="mt-6 text-lg leading-8 text-white/60">
                 Unlock a more intentional dating experience with premium
-                features designed to give you more control over how you
-                discover and connect.
+                features designed to give you more control over how you discover
+                and connect.
               </p>
 
               <Link
@@ -241,4 +240,3 @@ function FeatureCard({
     </div>
   );
 }
-
