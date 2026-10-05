@@ -1,2 +1,1 @@
-pnpm --filter web lint
-pnpm --filter web format:check
+pnpm exec lint-staged
