@@ -242,6 +242,20 @@ model UserMedia {
   @@index([mediaType])
 }
 
+model PremiumPlan {
+  id              String                 @id @default(cuid())
+  name            String
+  slug            String                 @unique
+  description     String?
+  price           Decimal                @db.Decimal(10, 2)
+  currency        String                 @default("NGN")
+  billingInterval PremiumBillingInterval
+  isActive        Boolean                @default(true)
+
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+}
+
 enum UserRole {
   USER
   ADMIN
@@ -319,4 +333,9 @@ enum DietPreference {
   KOSHER
   OTHER
   PREFER_NOT_TO_SAY
+}
+
+enum PremiumBillingInterval {
+  MONTH
+  YEAR
 }
