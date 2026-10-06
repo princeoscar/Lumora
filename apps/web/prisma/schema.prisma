@@ -255,6 +255,7 @@ model PremiumPlan {
   isActive        Boolean                @default(true)
   subscriptions Subscription[]
   payments Payment[]
+  entitlements PremiumEntitlement[]
 
   createdAt       DateTime               @default(now())
   updatedAt       DateTime               @updatedAt
@@ -316,6 +317,22 @@ model Payment {
   @@index([premiumPlanId])
   @@index([subscriptionId])
   @@index([status])
+}
+
+model PremiumEntitlement {
+  id            String          @id @default(cuid())
+  premiumPlanId String
+  type          EntitlementType
+  isEnabled     Boolean         @default(true)
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  premiumPlan PremiumPlan @relation(fields: [premiumPlanId], references: [id], onDelete: Cascade)
+
+  @@unique([premiumPlanId, type])
+  @@index([premiumPlanId])
+  @@index([type])
 }
 
 enum UserRole {
@@ -408,6 +425,17 @@ enum PaymentStatus {
   FAILED
   REFUNDED
   CANCELED
+}
+
+enum EntitlementType {
+  UNLIMITED_LIKES
+  SEE_WHO_LIKED_YOU
+  SUPER_LIKE
+  BOOST
+  ADVANCED_FILTERS
+  INCOGNITO_MODE
+  READ_RECEIPTS
+  PREMIUM_PROFILE_ACCESS
 }
 
 enum SubscriptionStatus {
