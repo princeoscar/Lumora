@@ -29,6 +29,7 @@ model User {
   discoveryPreference      DiscoveryPreference?
   interests                UserInterest[]
   prompts                  UserPrompt[]
+  subscriptions            Subscription[]
   sentDiscoveryActions     DiscoveryAction[]    @relation("DiscoveryActionActor")
   receivedDiscoveryActions DiscoveryAction[]    @relation("DiscoveryActionTarget")
   matchesAsUser            Match[]              @relation("MatchUser")
@@ -251,9 +252,38 @@ model PremiumPlan {
   currency        String                 @default("NGN")
   billingInterval PremiumBillingInterval
   isActive        Boolean                @default(true)
+  subscriptions Subscription[]
 
   createdAt       DateTime               @default(now())
   updatedAt       DateTime               @updatedAt
+}
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  userId             String
+  premiumPlanId      String
+
+  status             SubscriptionStatus @default(ACTIVE)
+
+  startedAt          DateTime           @default(now())
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+
+  canceledAt         DateTime?
+  cancelAtPeriodEnd  Boolean            @default(false)
+
+  provider           String?
+  providerId         String?            @unique
+
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  premiumPlan PremiumPlan @relation(fields: [premiumPlanId], references: [id], onDelete: Restrict)
+
+  @@index([userId, status])
+  @@index([premiumPlanId])
+  @@index([currentPeriodEnd])
 }
 
 enum UserRole {
@@ -339,3 +369,12 @@ enum PremiumBillingInterval {
   MONTH
   YEAR
 }
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
+  PAST_DUE
+  PAUSED
+}
+
