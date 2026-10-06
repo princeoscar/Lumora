@@ -24,6 +24,7 @@ model User {
   media                    UserMedia[]
   profile                  UserProfile?
   location             UserLocation?
+  lifestyle            UserLifestyle?
   discoveryPreference      DiscoveryPreference?
   interests                UserInterest[]
   prompts                  UserPrompt[]
@@ -81,6 +82,25 @@ model UserLocation {
 
   @@index([countryCode])
   @@index([city])
+}
+
+model UserLifestyle {
+  id                 String              @id @default(cuid())
+  userId             String              @unique
+
+  smoking            LifestyleFrequency?
+  drinking           LifestyleFrequency?
+  cannabis           LifestyleFrequency?
+  childrenStatus     ChildrenStatus?
+  childrenPreference ChildrenPreference?
+  pets               PetPreference?
+  diet               DietPreference?
+  exercise           LifestyleFrequency?
+
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Interest {
@@ -238,4 +258,42 @@ enum MediaType {
 enum DiscoveryActionType {
   LIKE
   PASS
+}
+
+enum LifestyleFrequency {
+  NEVER
+  SOMETIMES
+  OFTEN
+  REGULARLY
+}
+
+enum ChildrenStatus {
+  HAVE_CHILDREN
+  NO_CHILDREN
+}
+
+enum ChildrenPreference {
+  WANT_CHILDREN
+  DONT_WANT_CHILDREN
+  OPEN_TO_CHILDREN
+  NOT_SURE
+}
+
+enum PetPreference {
+  HAVE_PETS
+  LOVE_PETS
+  LIKE_PETS
+  NO_PETS
+  NOT_A_FAN
+}
+
+enum DietPreference {
+  OMNIVORE
+  VEGETARIAN
+  VEGAN
+  PESCATARIAN
+  HALAL
+  KOSHER
+  OTHER
+  PREFER_NOT_TO_SAY
 }
