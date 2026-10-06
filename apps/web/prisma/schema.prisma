@@ -31,6 +31,7 @@ model User {
   prompts                  UserPrompt[]
   subscriptions            Subscription[]
   payments Payment[]
+  premiumUsages PremiumUsage[]
   sentDiscoveryActions     DiscoveryAction[]    @relation("DiscoveryActionActor")
   receivedDiscoveryActions DiscoveryAction[]    @relation("DiscoveryActionTarget")
   matchesAsUser            Match[]              @relation("MatchUser")
@@ -335,6 +336,27 @@ model PremiumEntitlement {
   @@index([type])
 }
 
+model PremiumUsage {
+  id          String           @id @default(cuid())
+  userId      String
+  type        PremiumUsageType
+
+  usageCount  Int              @default(0)
+  usageLimit  Int?
+
+  periodStart DateTime
+  periodEnd   DateTime
+
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, periodStart])
+  @@index([userId, type])
+  @@index([periodEnd])
+}
+
 enum UserRole {
   USER
   ADMIN
@@ -436,6 +458,12 @@ enum EntitlementType {
   INCOGNITO_MODE
   READ_RECEIPTS
   PREMIUM_PROFILE_ACCESS
+}
+
+enum PremiumUsageType {
+  LIKE
+  SUPER_LIKE
+  BOOST
 }
 
 enum SubscriptionStatus {
