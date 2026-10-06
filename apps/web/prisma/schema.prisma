@@ -25,6 +25,7 @@ model User {
   profile                  UserProfile?
   location             UserLocation?
   lifestyle            UserLifestyle?
+  settings             UserSettings?
   discoveryPreference      DiscoveryPreference?
   interests                UserInterest[]
   prompts                  UserPrompt[]
@@ -101,6 +102,28 @@ model UserLifestyle {
   updatedAt          DateTime            @updatedAt
 
   user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserSettings {
+  id                     String   @id @default(cuid())
+  userId                 String   @unique
+
+  pushNotifications      Boolean  @default(true)
+  emailNotifications     Boolean  @default(true)
+  matchNotifications     Boolean  @default(true)
+  messageNotifications   Boolean  @default(true)
+  marketingNotifications Boolean  @default(false)
+
+  readReceipts           Boolean  @default(true)
+  showOnlineStatus       Boolean  @default(true)
+
+  language               String   @default("en")
+  timezone               String   @default("UTC")
+
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Interest {
