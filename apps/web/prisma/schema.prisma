@@ -48,7 +48,7 @@ model Verification {
   id              String             @id @default(cuid())
   userId          String
   type            VerificationType
-  status          VerificationStatus @default(PENDING)
+  status          VerificationReviewStatus @default(PENDING)
 
   submittedAt     DateTime           @default(now())
   reviewedAt      DateTime?
@@ -409,6 +409,12 @@ enum VerificationStatus {
   UNVERIFIED
   PENDING
   VERIFIED
+}
+
+enum VerificationReviewStatus  {
+  PENDING
+  VERIFIED
+  REJECTED
 }
 
 enum VerificationType {
