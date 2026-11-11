@@ -5,8 +5,53 @@ import { getPendingLikeCount } from "@/lib/db/discovery";
 import { RealtimeLikesListener } from "@/components/likes/realtime-likes-listener";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { requireCurrentUserWithProfile } from "@/lib/auth/require-current-user-with-profile";
+import { getCurrentUser } from "@/lib/auth/get-current-user";
+import { requireModerator } from "@/lib/auth/staff-access";
 
 export async function MainNav() {
+  const currentUser = await getCurrentUser();
+
+  // Staff members do not need dating profiles.
+  if (currentUser?.role === "ADMIN" || currentUser?.role === "MODERATOR") {
+    const staffUser = await requireModerator();
+
+    return (
+      <nav className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-4 px-4 sm:px-6 md:px-10">
+          <Link
+            href={
+              staffUser.role === "ADMIN"
+                ? "/admin/dashboard"
+                : "/moderation/reports"
+            }
+            className="mr-auto font-serif text-2xl font-semibold tracking-tight"
+          >
+            Lumora
+          </Link>
+
+          {staffUser.role === "ADMIN" && (
+            <Link
+              href="/admin/dashboard"
+              className="rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
+            >
+              Admin Dashboard
+            </Link>
+          )}
+
+          <Link
+            href="/moderation/reports"
+            className="rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
+          >
+            Moderation
+          </Link>
+
+          <ThemeToggle />
+        </div>
+      </nav>
+    );
+  }
+
+  // Regular members must complete onboarding.
   const user = await requireCurrentUserWithProfile();
   const pendingLikeCount = await getPendingLikeCount(user.id);
 

@@ -7,12 +7,8 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "pnpm --filter web exec eslint --fix",
-      "pnpm --filter web exec prettier --write"
-    ],
-    "*.{json,css,md,yml,yaml}": [
-      "pnpm --filter web exec prettier --write"
+    "*.{js,jsx,ts,tsx,json,css,md,yml,yaml}": [
+      "node apps/web/node_modules/prettier/bin/prettier.cjs --write"
     ]
   }
 }

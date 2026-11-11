@@ -1,11 +1,13 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { canAccessApp } from "@/lib/auth/user-access";
 
 import {
   getMatchChannelName,
   getMatchPresenceChannelName,
 } from "@/lib/pusher/channels";
 import { pusherServer } from "@/lib/pusher/server";
+import { areUsersBlocked } from "@/lib/db/blocks";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
@@ -38,6 +40,8 @@ export async function POST(request: Request) {
       },
       select: {
         id: true,
+        accountStatus: true,
+        deletedAt: true,
         profile: {
           select: {
             displayName: true,
@@ -48,7 +52,7 @@ export async function POST(request: Request) {
       },
     });
 
-    if (!user) {
+    if (!user || !canAccessApp(user)) {
       return new NextResponse("Forbidden", { status: 403 });
     }
 
@@ -95,10 +99,21 @@ export async function POST(request: Request) {
       },
       select: {
         id: true,
+        userId: true,
+        matchedUserId: true,
       },
     });
 
     if (!match) {
+      return new NextResponse("Forbidden", { status: 403 });
+    }
+
+    const otherUserId =
+      match.userId === user.id ? match.matchedUserId : match.userId;
+
+    const isBlocked = await areUsersBlocked(user.id, otherUserId);
+
+    if (isBlocked) {
       return new NextResponse("Forbidden", { status: 403 });
     }
 

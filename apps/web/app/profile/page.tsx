@@ -66,6 +66,10 @@ export default async function ProfilePage() {
               <Button asChild>
                 <Link href="/profile/edit">Edit Profile</Link>
               </Button>
+
+              <Button asChild variant="outline">
+                <Link href="/settings/blocked-users">Manage blocked users</Link>
+              </Button>
             </div>
           </div>
 

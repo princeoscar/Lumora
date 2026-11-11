@@ -97,7 +97,22 @@ export function MatchRealtimeProvider({
     };
 
     const handleMatchRemoved = () => {
-      router.push("/matches");
+      // Immediately stop both realtime subscriptions.
+      pusher.unsubscribe(privateChannelName);
+      pusher.unsubscribe(presenceChannelName);
+
+      // Prevent further typing events.
+      channelRef.current = null;
+
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+
+      setIsOtherUserTyping(false);
+      setIsOtherUserOnline(false);
+
+      router.replace("/matches");
     };
 
     const handleMessageRead = () => {

@@ -15,29 +15,36 @@ model User {
   role                     UserRole             @default(USER)
   accountStatus            AccountStatus        @default(PENDING)
   verificationStatus       VerificationStatus   @default(UNVERIFIED)
-  verifications             Verification[]
   emailVerified            Boolean              @default(false)
   onboardingCompleted      Boolean              @default(false)
   lastActiveAt             DateTime?
   createdAt                DateTime             @default(now())
   updatedAt                DateTime             @updatedAt
   deletedAt                DateTime?
+  receivedDiscoveryActions DiscoveryAction[]    @relation("DiscoveryActionTarget")
+  sentDiscoveryActions     DiscoveryAction[]    @relation("DiscoveryActionActor")
+  discoveryPreference      DiscoveryPreference?
+  matchesAsMatchedUser     Match[]              @relation("MatchMatchedUser")
+  matchesAsUser            Match[]              @relation("MatchUser")
+  messagesSent             Message[]            @relation("MessageSender")
+  payments                 Payment[]
+  premiumUsages            PremiumUsage[]
+  subscriptions            Subscription[]
+  blocksReceived           UserBlock[]          @relation("UserBlocksReceived")
+  blocksCreated            UserBlock[]          @relation("UserBlocksCreated")
+  interests                UserInterest[]
+  lifestyle                UserLifestyle?
+  location                 UserLocation?
   media                    UserMedia[]
   profile                  UserProfile?
-  location             UserLocation?
-  lifestyle            UserLifestyle?
-  settings             UserSettings?
-  discoveryPreference      DiscoveryPreference?
-  interests                UserInterest[]
   prompts                  UserPrompt[]
-  subscriptions            Subscription[]
-  payments Payment[]
-  premiumUsages PremiumUsage[]
-  sentDiscoveryActions     DiscoveryAction[]    @relation("DiscoveryActionActor")
-  receivedDiscoveryActions DiscoveryAction[]    @relation("DiscoveryActionTarget")
-  matchesAsUser            Match[]              @relation("MatchUser")
-  matchesAsMatchedUser     Match[]              @relation("MatchMatchedUser")
-  messagesSent             Message[]            @relation("MessageSender")
+  reportsReceived          UserReport[]         @relation("UserReportsReceived")
+  reportsSubmitted         UserReport[]         @relation("UserReportsSubmitted")
+  reportsReviewed          UserReport[]         @relation("UserReportsReviewed")
+  moderationActionsPerformed ModerationLog[] @relation("ModerationActor")
+moderationActionsReceived  ModerationLog[] @relation("ModerationTarget")
+  settings                 UserSettings?
+  verifications            Verification[]
 
   @@index([email])
   @@index([username])
@@ -45,21 +52,17 @@ model User {
 }
 
 model Verification {
-  id              String             @id @default(cuid())
+  id              String                   @id @default(cuid())
   userId          String
   type            VerificationType
-  status          VerificationReviewStatus @default(PENDING)
-
-  submittedAt     DateTime           @default(now())
+  submittedAt     DateTime                 @default(now())
   reviewedAt      DateTime?
   expiresAt       DateTime?
-
   rejectionReason String?
-
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
-
-  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  status          VerificationReviewStatus @default(PENDING)
+  user            User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
   evidence        VerificationEvidence[]
 
   @@index([userId, status])
@@ -67,25 +70,16 @@ model Verification {
   @@index([status])
 }
 
-enum VerificationEvidenceType {
-  SELFIE
-  IDENTITY_DOCUMENT
-}
-
 model VerificationEvidence {
   id             String                   @id @default(cuid())
   verificationId String
-
   type           VerificationEvidenceType
-
   publicId       String
   resourceType   String                   @default("image")
   mimeType       String?
   fileSize       Int?
-
   createdAt      DateTime                 @default(now())
   updatedAt      DateTime                 @updatedAt
-
   verification   Verification             @relation(fields: [verificationId], references: [id], onDelete: Cascade)
 
   @@index([verificationId])
@@ -114,24 +108,19 @@ model UserProfile {
 }
 
 model UserLocation {
-  id            String   @id @default(cuid())
-  userId        String   @unique
-
+  id            String    @id @default(cuid())
+  userId        String    @unique
   city          String?
   state         String?
   country       String?
   countryCode   String?
-
-  latitude      Decimal? @db.Decimal(10, 7)
-  longitude     Decimal? @db.Decimal(10, 7)
-
-  isApproximate Boolean  @default(true)
+  latitude      Decimal?  @db.Decimal(10, 7)
+  longitude     Decimal?  @db.Decimal(10, 7)
+  isApproximate Boolean   @default(true)
   lastUpdatedAt DateTime?
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([countryCode])
   @@index([city])
@@ -140,7 +129,6 @@ model UserLocation {
 model UserLifestyle {
   id                 String              @id @default(cuid())
   userId             String              @unique
-
   smoking            LifestyleFrequency?
   drinking           LifestyleFrequency?
   cannabis           LifestyleFrequency?
@@ -149,32 +137,25 @@ model UserLifestyle {
   pets               PetPreference?
   diet               DietPreference?
   exercise           LifestyleFrequency?
-
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
-
   user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model UserSettings {
   id                     String   @id @default(cuid())
   userId                 String   @unique
-
   pushNotifications      Boolean  @default(true)
   emailNotifications     Boolean  @default(true)
   matchNotifications     Boolean  @default(true)
   messageNotifications   Boolean  @default(true)
   marketingNotifications Boolean  @default(false)
-
   readReceipts           Boolean  @default(true)
   showOnlineStatus       Boolean  @default(true)
-
   language               String   @default("en")
   timezone               String   @default("UTC")
-
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
-
   user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -192,9 +173,8 @@ model UserInterest {
   userId     String
   interestId String
   createdAt  DateTime @default(now())
-
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  interest Interest @relation(fields: [interestId], references: [id], onDelete: Cascade)
+  interest   Interest @relation(fields: [interestId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, interestId])
   @@index([userId])
@@ -209,8 +189,7 @@ model UserPrompt {
   displayOrder Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, displayOrder])
 }
@@ -223,8 +202,7 @@ model DiscoveryPreference {
   interestedInGenders Gender[] @default([])
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model DiscoveryAction {
@@ -234,9 +212,8 @@ model DiscoveryAction {
   action       DiscoveryActionType
   createdAt    DateTime            @default(now())
   updatedAt    DateTime            @updatedAt
-
-  user   User @relation("DiscoveryActionActor", fields: [userId], references: [id], onDelete: Cascade)
-  target User @relation("DiscoveryActionTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  target       User                @relation("DiscoveryActionTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  user         User                @relation("DiscoveryActionActor", fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, targetUserId])
   @@index([userId, action])
@@ -244,14 +221,13 @@ model DiscoveryAction {
 }
 
 model Match {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   userId        String
   matchedUserId String
-  createdAt     DateTime @default(now())
-
-  user        User      @relation("MatchUser", fields: [userId], references: [id], onDelete: Cascade)
-  matchedUser User      @relation("MatchMatchedUser", fields: [matchedUserId], references: [id], onDelete: Cascade)
-  messages    Message[]
+  createdAt     DateTime  @default(now())
+  matchedUser   User      @relation("MatchMatchedUser", fields: [matchedUserId], references: [id], onDelete: Cascade)
+  user          User      @relation("MatchUser", fields: [userId], references: [id], onDelete: Cascade)
+  messages      Message[]
 
   @@unique([userId, matchedUserId])
   @@index([userId, createdAt])
@@ -259,21 +235,77 @@ model Match {
 }
 
 model Message {
-  id        String    @id @default(cuid())
+  id        String       @id @default(cuid())
   matchId   String
   senderId  String
-  content   String    @db.VarChar(2000)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  content   String       @db.VarChar(2000)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
   editedAt  DateTime?
   deletedAt DateTime?
   readAt    DateTime?
-
-  match  Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  sender User  @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  match     Match        @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  sender    User         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  reports   UserReport[] @relation("MessageReports")
 
   @@index([matchId, createdAt])
   @@index([senderId, createdAt])
+}
+
+model UserBlock {
+  id        String   @id @default(cuid())
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+  blocked   User     @relation("UserBlocksReceived", fields: [blockedId], references: [id], onDelete: Cascade)
+  blocker   User     @relation("UserBlocksCreated", fields: [blockerId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+}
+
+model UserReport {
+  id             String       @id @default(cuid())
+  reporterId     String
+  reportedUserId String
+  messageId      String?
+  reason         ReportReason
+  moderationLogs ModerationLog[]
+  details        String?      @db.VarChar(2000)
+  status         ReportStatus @default(PENDING)
+  reviewedById   String?
+  reviewNote     String?      @db.VarChar(2000)
+  reviewedAt     DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  message        Message?     @relation("MessageReports", fields: [messageId], references: [id])
+  reportedUser   User         @relation("UserReportsReceived", fields: [reportedUserId], references: [id], onDelete: Cascade)
+  reporter       User         @relation("UserReportsSubmitted", fields: [reporterId], references: [id], onDelete: Cascade)
+  reviewedBy     User?        @relation("UserReportsReviewed", fields: [reviewedById], references: [id])
+
+  @@index([reporterId, createdAt])
+  @@index([reportedUserId, status, createdAt])
+  @@index([status, createdAt])
+  @@index([reviewedById])
+}
+
+model ModerationLog {
+  id           String   @id @default(cuid())
+  moderatorId  String
+  targetUserId String
+  reportId     String?
+  action       String
+  note         String?  @db.VarChar(2000)
+  createdAt    DateTime @default(now())
+
+  moderator  User        @relation("ModerationActor", fields: [moderatorId], references: [id], onDelete: Restrict)
+  targetUser User        @relation("ModerationTarget", fields: [targetUserId], references: [id], onDelete: Restrict)
+  report     UserReport? @relation(fields: [reportId], references: [id], onDelete: SetNull)
+  @@index([moderatorId, createdAt])
+  @@index([targetUserId, createdAt])
+  @@index([reportId])
+  @@index([action, createdAt])
 }
 
 model UserMedia {
@@ -303,37 +335,30 @@ model PremiumPlan {
   currency        String                 @default("NGN")
   billingInterval PremiumBillingInterval
   isActive        Boolean                @default(true)
-  subscriptions Subscription[]
-  payments Payment[]
-  entitlements PremiumEntitlement[]
-
   createdAt       DateTime               @default(now())
   updatedAt       DateTime               @updatedAt
+  payments        Payment[]
+  entitlements    PremiumEntitlement[]
+  subscriptions   Subscription[]
 }
 
 model Subscription {
   id                 String             @id @default(cuid())
   userId             String
   premiumPlanId      String
-
   status             SubscriptionStatus @default(ACTIVE)
-
   startedAt          DateTime           @default(now())
   currentPeriodStart DateTime
   currentPeriodEnd   DateTime
-
   canceledAt         DateTime?
   cancelAtPeriodEnd  Boolean            @default(false)
-
   provider           String?
   providerId         String?            @unique
-
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
-
-  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  premiumPlan        PremiumPlan @relation(fields: [premiumPlanId], references: [id], onDelete: Restrict)
   payments           Payment[]
+  premiumPlan        PremiumPlan        @relation(fields: [premiumPlanId], references: [id])
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, status])
   @@index([premiumPlanId])
@@ -345,23 +370,18 @@ model Payment {
   userId         String
   premiumPlanId  String
   subscriptionId String?
-
   amount         Decimal       @db.Decimal(10, 2)
   currency       String        @default("NGN")
   status         PaymentStatus @default(PENDING)
-
   provider       String?
   providerId     String?       @unique
-
   paidAt         DateTime?
   refundedAt     DateTime?
-
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
-
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  premiumPlan  PremiumPlan  @relation(fields: [premiumPlanId], references: [id], onDelete: Restrict)
-  subscription Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  premiumPlan    PremiumPlan   @relation(fields: [premiumPlanId], references: [id])
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@index([premiumPlanId])
@@ -374,11 +394,9 @@ model PremiumEntitlement {
   premiumPlanId String
   type          EntitlementType
   isEnabled     Boolean         @default(true)
-
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-
-  premiumPlan PremiumPlan @relation(fields: [premiumPlanId], references: [id], onDelete: Cascade)
+  premiumPlan   PremiumPlan     @relation(fields: [premiumPlanId], references: [id], onDelete: Cascade)
 
   @@unique([premiumPlanId, type])
   @@index([premiumPlanId])
@@ -389,21 +407,22 @@ model PremiumUsage {
   id          String           @id @default(cuid())
   userId      String
   type        PremiumUsageType
-
   usageCount  Int              @default(0)
   usageLimit  Int?
-
   periodStart DateTime
   periodEnd   DateTime
-
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, type, periodStart])
   @@index([userId, type])
   @@index([periodEnd])
+}
+
+enum VerificationEvidenceType {
+  SELFIE
+  IDENTITY_DOCUMENT
 }
 
 enum UserRole {
@@ -437,7 +456,7 @@ enum VerificationStatus {
   VERIFIED
 }
 
-enum VerificationReviewStatus  {
+enum VerificationReviewStatus {
   PENDING
   VERIFIED
   REJECTED
@@ -534,3 +553,22 @@ enum SubscriptionStatus {
   PAUSED
 }
 
+enum ReportReason {
+  HARASSMENT
+  HATE_OR_ABUSE
+  FAKE_PROFILE
+  SCAM_OR_FRAUD
+  SPAM
+  INAPPROPRIATE_CONTENT
+  UNWANTED_SEXUAL_CONTENT
+  THREATS_OR_VIOLENCE
+  UNDERAGE_USER
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  IN_REVIEW
+  RESOLVED
+  DISMISSED
+}

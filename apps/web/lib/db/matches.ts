@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import type { MatchItem, MatchProfile } from "@/types/matches";
+import { getBlockedUserIds } from "@/lib/db/blocks";
 
 function calculateAge(dateOfBirth: Date) {
   const today = new Date();
@@ -65,9 +66,24 @@ function buildMatchProfile(user: {
 }
 
 export async function getUserMatches(userId: string): Promise<MatchItem[]> {
+  const blockedUserIds = await getBlockedUserIds(userId);
   const matches = await prisma.match.findMany({
     where: {
-      OR: [{ userId }, { matchedUserId: userId }],
+      AND: [
+        {
+          OR: [{ userId }, { matchedUserId: userId }],
+        },
+        {
+          userId: {
+            notIn: blockedUserIds,
+          },
+        },
+        {
+          matchedUserId: {
+            notIn: blockedUserIds,
+          },
+        },
+      ],
     },
     select: {
       id: true,

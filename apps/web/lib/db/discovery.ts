@@ -1,3 +1,4 @@
+import { areUsersBlocked, getBlockedUserIds } from "@/lib/db/blocks";
 import { prisma } from "@/lib/prisma";
 import type { DiscoveryCandidate } from "@/types/discovery";
 
@@ -69,6 +70,8 @@ export async function getDiscoveryCandidates(
     return [];
   }
 
+  const blockedUserIds = await getBlockedUserIds(userId);
+
   const { minimumDateOfBirth, maximumDateOfBirth } = getAgeDateBoundaries(
     preferences.minAge,
     preferences.maxAge,
@@ -78,6 +81,7 @@ export async function getDiscoveryCandidates(
     where: {
       id: {
         not: userId,
+        notIn: blockedUserIds,
       },
       accountStatus: "ACTIVE",
       receivedDiscoveryActions: {
@@ -180,6 +184,10 @@ export async function isDiscoverableTarget(
     return false;
   }
 
+  if (await areUsersBlocked(userId, targetUserId)) {
+    return false;
+  }
+
   const preferences = await prisma.discoveryPreference.findUnique({
     where: {
       userId,
@@ -235,12 +243,14 @@ export async function isDiscoverableTarget(
 }
 
 export async function getPendingLikeCount(userId: string) {
+  const blockedUserIds = await getBlockedUserIds(userId);
   const [incomingLikes, matches] = await Promise.all([
     prisma.discoveryAction.findMany({
       where: {
         targetUserId: userId,
         userId: {
           not: userId,
+          notIn: blockedUserIds,
         },
         action: "LIKE",
       },
@@ -280,11 +290,13 @@ export async function getPendingLikeCount(userId: string) {
 export async function getPendingLikes(
   userId: string,
 ): Promise<DiscoveryCandidate[]> {
+  const blockedUserIds = await getBlockedUserIds(userId);
   const incomingLikes = await prisma.discoveryAction.findMany({
     where: {
       targetUserId: userId,
       userId: {
         not: userId,
+        notIn: blockedUserIds,
       },
       action: "LIKE",
     },

@@ -3,17 +3,20 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
+import { blockUserAction } from "@/actions/block-actions";
 import { saveDiscoveryAction } from "@/actions/discovery-actions";
 import { Button } from "@/components/ui/button";
 
 type PublicProfileActionsProps = {
   targetUserId: string;
   from?: string;
+  showDiscoveryActions?: boolean;
 };
 
 export function PublicProfileActions({
   targetUserId,
   from,
+  showDiscoveryActions = true,
 }: PublicProfileActionsProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -48,6 +51,32 @@ export function PublicProfileActions({
     });
   }
 
+  function handleBlock() {
+    const confirmed = window.confirm(
+      "Are you sure you want to block this person? You will no longer see each other's profiles or conversations, and messaging will be restricted.",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setError(null);
+
+    startTransition(async () => {
+      const result = await blockUserAction({ targetUserId });
+
+      if (!result.success) {
+        setError(
+          result.error ?? "We couldn't block this person. Please try again.",
+        );
+        return;
+      }
+
+      router.push("/discover");
+      router.refresh();
+    });
+  }
+
   return (
     <div className="space-y-3">
       {error && (
@@ -58,25 +87,36 @@ export function PublicProfileActions({
           {error}
         </div>
       )}
+      {showDiscoveryActions && (
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => handleAction("PASS")}
+            disabled={isPending}
+          >
+            {isPending ? "Please wait..." : "Pass"}
+          </Button>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => handleAction("PASS")}
-          disabled={isPending}
-        >
-          {isPending ? "Saving..." : "Pass"}
-        </Button>
+          <Button
+            type="button"
+            onClick={() => handleAction("LIKE")}
+            disabled={isPending}
+          >
+            {isPending ? "Please wait..." : likeLabel}
+          </Button>
+        </div>
+      )}
 
-        <Button
-          type="button"
-          onClick={() => handleAction("LIKE")}
-          disabled={isPending}
-        >
-          {isPending ? "Saving..." : likeLabel}
-        </Button>
-      </div>
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        onClick={handleBlock}
+        disabled={isPending}
+      >
+        {isPending ? "Please wait..." : "Block this person"}
+      </Button>
     </div>
   );
 }

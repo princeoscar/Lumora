@@ -55,7 +55,15 @@ export default async function DiscoverPage() {
               </div>
             </section>
           ) : (
-            <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <section
+              className={`grid gap-6 ${
+                candidates.length === 1
+                  ? "mx-auto max-w-md grid-cols-1"
+                  : candidates.length === 2
+                    ? "sm:grid-cols-2"
+                    : "sm:grid-cols-2 lg:grid-cols-3"
+              }`}
+            >
               {candidates.map((candidate) => (
                 <DiscoveryCandidateCard
                   key={candidate.userId}

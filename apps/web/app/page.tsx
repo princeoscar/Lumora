@@ -11,14 +11,23 @@ export default async function Home() {
   if (userId) {
     const user = await getCurrentUserWithProfile();
 
-    if (!user) {
-      redirect("/sign-in");
-    }
+    if (!user) redirect("/sign-in");
 
     if (!canAccessApp(user)) {
       redirect("/account-disabled");
     }
 
+    // Administrators should not need a dating profile.
+    if (user.role === "ADMIN") {
+      redirect("/admin/dashboard");
+    }
+
+    // Moderators should go directly to the moderation area.
+    if (user.role === "MODERATOR") {
+      redirect("/moderation/reports");
+    }
+
+    // Regular users must complete onboarding.
     if (!user.onboardingCompleted || !user.profile) {
       redirect("/onboarding");
     }

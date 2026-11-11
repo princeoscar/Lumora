@@ -41,6 +41,13 @@ export function RealtimeMessageInboxListener({
 
       channel.bind("message.created", handleMessageCreated);
 
+      const handleMatchRemoved = () => {
+        pusher.unsubscribe(channelName);
+        router.refresh();
+      };
+
+      channel.bind("match.removed", handleMatchRemoved);
+
       channel.bind("pusher:subscription_error", (error: unknown) => {
         console.error(
           `❌ Pusher subscription error for ${channelName}:`,
@@ -51,12 +58,14 @@ export function RealtimeMessageInboxListener({
       return {
         channel,
         channelName,
+        handleMatchRemoved,
       };
     });
 
     return () => {
-      for (const { channel, channelName } of channels) {
+      for (const { channel, channelName, handleMatchRemoved } of channels) {
         channel.unbind("message.created", handleMessageCreated);
+        channel.unbind("match.removed", handleMatchRemoved);
         pusher.unsubscribe(channelName);
       }
 

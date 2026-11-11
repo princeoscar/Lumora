@@ -1,5 +1,30 @@
 import { prisma } from "@/lib/prisma";
 
+async function areMatchParticipantsBlocked(
+  firstUserId: string,
+  secondUserId: string,
+): Promise<boolean> {
+  const block = await prisma.userBlock.findFirst({
+    where: {
+      OR: [
+        {
+          blockerId: firstUserId,
+          blockedId: secondUserId,
+        },
+        {
+          blockerId: secondUserId,
+          blockedId: firstUserId,
+        },
+      ],
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  return block !== null;
+}
+
 export type ConversationMessage = {
   id: string;
   matchId: string;
@@ -23,10 +48,19 @@ export async function getMatchMessages(
     },
     select: {
       id: true,
+      userId: true,
+      matchedUserId: true,
     },
   });
 
   if (!match) {
+    return [];
+  }
+
+  const otherUserId =
+    match.userId === userId ? match.matchedUserId : match.userId;
+
+  if (await areMatchParticipantsBlocked(userId, otherUserId)) {
     return [];
   }
 
@@ -96,6 +130,21 @@ function getDisplayName(firstName: string, lastName: string | null) {
 export async function getMessageThreads(
   userId: string,
 ): Promise<MessageThread[]> {
+  const blockedUserIds = await prisma.userBlock.findMany({
+    where: {
+      OR: [{ blockerId: userId }, { blockedId: userId }],
+    },
+    select: {
+      blockerId: true,
+      blockedId: true,
+    },
+  });
+
+  const blockedIds = new Set(
+    blockedUserIds.map((block) =>
+      block.blockerId === userId ? block.blockedId : block.blockerId,
+    ),
+  );
   const matches = await prisma.match.findMany({
     where: {
       OR: [{ userId }, { matchedUserId: userId }],
@@ -202,6 +251,10 @@ export async function getMessageThreads(
     const matchedUser =
       match.userId === userId ? match.matchedUser : match.user;
 
+    if (blockedIds.has(matchedUser.id)) {
+      continue;
+    }
+
     if (!matchedUser.profile) {
       continue;
     }
@@ -240,10 +293,22 @@ export async function markMatchMessagesAsRead(matchId: string, userId: string) {
     },
     select: {
       id: true,
+      userId: true,
+      matchedUserId: true,
     },
   });
 
   if (!match) {
+    return {
+      success: false,
+      updatedCount: 0,
+    };
+  }
+
+  const otherUserId =
+    match.userId === userId ? match.matchedUserId : match.userId;
+
+  if (await areMatchParticipantsBlocked(userId, otherUserId)) {
     return {
       success: false,
       updatedCount: 0,

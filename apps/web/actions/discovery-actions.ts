@@ -41,7 +41,31 @@ export async function saveDiscoveryAction(input: unknown) {
       };
     }
 
-    await prisma.$transaction(async (tx) => {
+    const transactionResult = await prisma.$transaction(async (tx) => {
+      const existingBlock = await tx.userBlock.findFirst({
+        where: {
+          OR: [
+            {
+              blockerId: user.id,
+              blockedId: targetUserId,
+            },
+            {
+              blockerId: targetUserId,
+              blockedId: user.id,
+            },
+          ],
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (existingBlock) {
+        return {
+          blocked: true,
+        };
+      }
+
       await tx.discoveryAction.upsert({
         where: {
           userId_targetUserId: {
@@ -60,7 +84,9 @@ export async function saveDiscoveryAction(input: unknown) {
       });
 
       if (action !== "LIKE") {
-        return;
+        return {
+          blocked: false,
+        };
       }
 
       const reciprocalLike = await tx.discoveryAction.findUnique({
@@ -73,7 +99,9 @@ export async function saveDiscoveryAction(input: unknown) {
       });
 
       if (reciprocalLike?.action !== "LIKE") {
-        return;
+        return {
+          blocked: false,
+        };
       }
 
       const [firstUserId, secondUserId] = [user.id, targetUserId].sort();
@@ -91,7 +119,18 @@ export async function saveDiscoveryAction(input: unknown) {
           matchedUserId: secondUserId,
         },
       });
+
+      return {
+        blocked: false,
+      };
     });
+
+    if (transactionResult.blocked) {
+      return {
+        success: false,
+        error: "This profile is not currently available for discovery.",
+      };
+    }
 
     if (action === "LIKE") {
       try {

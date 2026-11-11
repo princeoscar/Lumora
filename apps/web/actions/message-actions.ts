@@ -38,10 +38,40 @@ export async function sendMessage(input: unknown) {
       },
       select: {
         id: true,
+        userId: true,
+        matchedUserId: true,
       },
     });
 
     if (!match) {
+      return {
+        success: false,
+        error: "This conversation is not available.",
+      };
+    }
+
+    const otherUserId =
+      match.userId === user.id ? match.matchedUserId : match.userId;
+
+    const existingBlock = await prisma.userBlock.findFirst({
+      where: {
+        OR: [
+          {
+            blockerId: user.id,
+            blockedId: otherUserId,
+          },
+          {
+            blockerId: otherUserId,
+            blockedId: user.id,
+          },
+        ],
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (existingBlock) {
       return {
         success: false,
         error: "This conversation is not available.",

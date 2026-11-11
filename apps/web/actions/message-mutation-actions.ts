@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-
+import { areUsersBlocked } from "@/lib/db/blocks";
 import { requireCurrentUser } from "@/lib/auth/require-current-user";
 import { getMatchChannelName } from "@/lib/pusher/channels";
 import { pusherServer } from "@/lib/pusher/server";
@@ -62,6 +62,36 @@ export async function editMessage(input: unknown) {
       return {
         success: false,
         error: "This message is no longer available for editing.",
+      };
+    }
+
+    const match = await prisma.match.findFirst({
+      where: {
+        id: existingMessage.matchId,
+        OR: [{ userId: user.id }, { matchedUserId: user.id }],
+      },
+      select: {
+        userId: true,
+        matchedUserId: true,
+      },
+    });
+
+    if (!match) {
+      return {
+        success: false,
+        error: "This conversation is no longer available.",
+      };
+    }
+
+    const otherUserId =
+      match.userId === user.id ? match.matchedUserId : match.userId;
+
+    const isBlocked = await areUsersBlocked(user.id, otherUserId);
+
+    if (isBlocked) {
+      return {
+        success: false,
+        error: "This conversation is not available.",
       };
     }
 

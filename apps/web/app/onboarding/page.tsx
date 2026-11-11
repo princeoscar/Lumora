@@ -6,6 +6,14 @@ import { requireCurrentUser } from "@/lib/auth/require-current-user";
 export default async function OnboardingPage() {
   const user = await requireCurrentUser();
 
+  if (user.role === "ADMIN") {
+    redirect("/admin/dashboard");
+  }
+
+  if (user.role === "MODERATOR") {
+    redirect("/moderation/reports");
+  }
+
   if (user.onboardingCompleted) {
     redirect("/dashboard");
   }

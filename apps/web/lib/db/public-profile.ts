@@ -1,8 +1,10 @@
+import { areUsersBlocked } from "@/lib/db/blocks";
 import { prisma } from "@/lib/prisma";
 import type { PublicProfile } from "@/types/public-profile";
 
 export async function getPublicProfileByUserId(
   userId: string,
+  viewerUserId: string,
 ): Promise<PublicProfile | null> {
   const user = await prisma.user.findFirst({
     where: {
@@ -77,6 +79,10 @@ export async function getPublicProfileByUserId(
   });
 
   if (!user?.profile) {
+    return null;
+  }
+
+  if (await areUsersBlocked(viewerUserId, user.id)) {
     return null;
   }
 
